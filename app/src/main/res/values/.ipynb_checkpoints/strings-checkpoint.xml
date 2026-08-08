@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">d308-mobile-application-development-android</string>
+    <string name="channel_name">Notifications</string>
+    <string name="channel_description">Channel for notifications</string>
+    <string name="excursion_channel_name">Excursion Notifications</string>
+    <string name="excursion_channel_description">Notifications for excursion events</string>
+</resources>
