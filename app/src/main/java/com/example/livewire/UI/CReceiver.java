@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.UI;
+package com.example.livewire.UI;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
-import com.example.d308_mobile_application_development_android.R;
+import com.example.livewire.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

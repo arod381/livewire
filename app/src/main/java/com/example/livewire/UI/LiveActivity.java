@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.UI;
+package com.example.livewire.UI;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.d308_mobile_application_development_android.R;
+import com.example.livewire.R;
 
 public class LiveActivity extends AppCompatActivity {
 
@@ -23,7 +23,7 @@ public class LiveActivity extends AppCompatActivity {
         // Setup button to navigate to VacationList
         Button button = findViewById(R.id.button);
         button.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, VacationList.class);
+            Intent intent = new Intent(LiveActivity.this, VacationList.class);
             intent.putExtra("test", "informational sent");
             startActivity(intent);
         });

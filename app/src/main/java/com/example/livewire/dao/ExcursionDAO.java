@@ -1,6 +1,5 @@
-package com.example.d308_mobile_application_development_android.dao;
+package com.example.livewire.dao;
 
-import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -8,8 +7,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.example.d308_mobile_application_development_android.entities.Excursion;
-import com.example.d308_mobile_application_development_android.entities.Vacation;
+import com.example.livewire.entities.Excursion;
 
 import java.util.List;
 

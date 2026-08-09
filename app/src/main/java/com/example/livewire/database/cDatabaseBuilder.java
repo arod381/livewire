@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.database;
+package com.example.livewire.database;
 
 import android.content.Context;
 
@@ -6,10 +6,10 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-import com.example.d308_mobile_application_development_android.dao.ExcursionDAO;
-import com.example.d308_mobile_application_development_android.dao.VacationDAO;
-import com.example.d308_mobile_application_development_android.entities.Excursion;
-import com.example.d308_mobile_application_development_android.entities.Vacation;
+import com.example.livewire.dao.ExcursionDAO;
+import com.example.livewire.dao.VacationDAO;
+import com.example.livewire.entities.Excursion;
+import com.example.livewire.entities.Vacation;
 
 @Database(entities = {Vacation.class, Excursion.class}, version = 4, exportSchema = false)
 public abstract class cDatabaseBuilder extends RoomDatabase {

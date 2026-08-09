@@ -1,11 +1,8 @@
-package com.example.d308_mobile_application_development_android.entities;
+package com.example.livewire.entities;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-import androidx.room.Query;
-
-import java.util.List;
 
 @Entity(tableName = "excursions")
 public class Excursion {

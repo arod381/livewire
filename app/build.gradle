@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.d308_mobile_application_development_android'
+    namespace 'com.example.livewire'
     compileSdk 34
 
     defaultConfig {

@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.UI;
+package com.example.livewire.UI;
 
 import android.app.DatePickerDialog;
 import android.app.AlarmManager;
@@ -16,12 +16,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.d308_mobile_application_development_android.R;
-import com.example.d308_mobile_application_development_android.UI.ExcursionAdapter;
-import com.example.d308_mobile_application_development_android.UI.ExcursionDetails;
-import com.example.d308_mobile_application_development_android.database.Repository;
-import com.example.d308_mobile_application_development_android.entities.Excursion;
-import com.example.d308_mobile_application_development_android.entities.Vacation;
+import com.example.livewire.R;
+import com.example.livewire.database.Repository;
+import com.example.livewire.entities.Excursion;
+import com.example.livewire.entities.Vacation;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.ParseException;

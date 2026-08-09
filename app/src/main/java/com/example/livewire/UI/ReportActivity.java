@@ -1,11 +1,11 @@
-package com.example.d308_mobile_application_development_android.UI;
+package com.example.livewire.UI;
 
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.d308_mobile_application_development_android.R;
+import com.example.livewire.R;
 
 public class ReportActivity extends AppCompatActivity {
 

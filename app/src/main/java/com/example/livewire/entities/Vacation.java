@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.entities;
+package com.example.livewire.entities;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

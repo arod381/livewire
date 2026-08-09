@@ -1,4 +1,4 @@
-package com.example.d308_mobile_application_development_android.UI;
+package com.example.livewire.UI;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,8 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.d308_mobile_application_development_android.R;
-import com.example.d308_mobile_application_development_android.entities.Vacation;
+import com.example.livewire.R;
+import com.example.livewire.entities.Vacation;
 
 import java.util.List;
 

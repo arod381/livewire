@@ -1,13 +1,11 @@
-package com.example.d308_mobile_application_development_android.database;
+package com.example.livewire.database;
 
 import android.app.Application;
 
-import androidx.room.Query;
-
-import com.example.d308_mobile_application_development_android.dao.ExcursionDAO;
-import com.example.d308_mobile_application_development_android.dao.VacationDAO;
-import com.example.d308_mobile_application_development_android.entities.Excursion;
-import com.example.d308_mobile_application_development_android.entities.Vacation;
+import com.example.livewire.dao.ExcursionDAO;
+import com.example.livewire.dao.VacationDAO;
+import com.example.livewire.entities.Excursion;
+import com.example.livewire.entities.Vacation;
 
 import java.util.ArrayList;
 import java.util.List;
