@@ -7,7 +7,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.d308_mobile_application_development_android"
+        applicationId "com.example.livewire"
         minSdk 26
         targetSdk 34
         versionCode 1

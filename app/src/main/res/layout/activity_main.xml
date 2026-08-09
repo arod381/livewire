@@ -7,6 +7,18 @@
     android:layout_height="match_parent"
     tools:context=".UI.MainActivity">
 
+    <EditText
+        android:id="@+id/note2"
+        android:layout_width="0dp"
+        android:layout_height="87dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Enter note"
+        android:inputType="textMultiLine"
+        android:lines="3"
+        app:layout_constraintBottom_toTopOf="@id/button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <ImageButton
         android:id="@+id/button"
         android:layout_width="100dp"
