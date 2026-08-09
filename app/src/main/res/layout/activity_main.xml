@@ -11,6 +11,7 @@
         android:layout_width="194dp"
         android:layout_height="36dp"
         android:text="Change The World!"
+        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -52,5 +53,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/ic_lock_idle_low_battery" />
+        app:srcCompat="@android:drawable/ic_lock_idle_low_battery"
+        app:tint="@color/yellow" />
 </androidx.constraintlayout.widget.ConstraintLayout>
