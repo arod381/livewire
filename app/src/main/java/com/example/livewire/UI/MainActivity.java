@@ -4,6 +4,7 @@ import android.content.Intent;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Setup button to navigate to VacationList
-        Button button = findViewById(R.id.button);
+        ImageButton button = findViewById(R.id.button);
         button.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, VacationList.class);
             intent.putExtra("test", "informational sent");
