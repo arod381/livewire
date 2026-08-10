@@ -28,9 +28,18 @@ public class MainViewModel extends ViewModel {
 
         loading.setValue(true);
 
-        repository.submitPrompt(prompt, result -> {
-            response.postValue(result);
-            loading.postValue(false);
+        repository.submitPrompt(prompt, new MainRepository.RepositoryCallback() {
+            @Override
+            public void onResult(String result) {
+                response.postValue(result);
+                loading.postValue(false);
+            }
+
+            @Override
+            public void onError(String error) {
+                response.postValue("Error: " + error);
+                loading.postValue(false);
+            }
         });
     }
 

@@ -1,24 +1,27 @@
 package com.example.livewire.Repository;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import com.example.livewire.Service.AIService;
 
 public class MainRepository {
 
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
-
+    private final AIService aiservice = new AIService();
     public interface RepositoryCallback {
         void onResult(String result);
+        void onError(String error);
     }
 
     public void submitPrompt(String prompt, RepositoryCallback callback) {
 
-        executor.execute(() -> {
+        aiservice.sendPrompt(prompt, new AIService.ServiceCallback() {
+            @Override
+            public void onResult(String response) {
+                callback.onResult(response);
+            }
 
-            String result = "Repository received: " + prompt;
-
-            callback.onResult(result);
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
         });
     }
 }
