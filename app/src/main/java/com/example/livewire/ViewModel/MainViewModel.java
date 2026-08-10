@@ -31,7 +31,7 @@ public class MainViewModel extends ViewModel {
         String result = repository.submitPrompt(prompt);
 
         // Temporary response to prove communication
-        response.setValue("You entered: " + prompt);
+        response.setValue(result);
 
         loading.setValue(false);
     }
