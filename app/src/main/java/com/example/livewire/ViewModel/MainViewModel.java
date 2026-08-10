@@ -28,12 +28,10 @@ public class MainViewModel extends ViewModel {
 
         loading.setValue(true);
 
-        String result = repository.submitPrompt(prompt);
-
-        // Temporary response to prove communication
-        response.setValue(result);
-
-        loading.setValue(false);
+        repository.submitPrompt(prompt, result -> {
+            response.postValue(result);
+            loading.postValue(false);
+        });
     }
 
     public LiveData<String> getResponse() {
