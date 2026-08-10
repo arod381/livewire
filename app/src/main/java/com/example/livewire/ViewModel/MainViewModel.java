@@ -1,5 +1,7 @@
 package com.example.livewire.ViewModel;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -7,7 +9,28 @@ public class MainViewModel extends ViewModel {
 
     private String prompt;
 
+    private final MutableLiveData<String> response =
+            new MutableLiveData<>();
+
+    private final MutableLiveData<Boolean> loading =
+            new MutableLiveData<>(false);
+
     public void submitPrompt(String prompt) {
         this.prompt = prompt;
+
+        loading.setValue(true);
+
+        // Temporary response to prove communication
+        response.setValue("You entered: " + prompt);
+
+        loading.setValue(false);
+    }
+
+    public LiveData<String> getResponse() {
+        return response;
+    }
+
+    public LiveData<Boolean> getLoading() {
+        return loading;
     }
 }

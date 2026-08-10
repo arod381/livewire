@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -34,6 +35,12 @@ public class MainActivity extends AppCompatActivity {
 
         EditText editText = findViewById(R.id.edit_text_id);
 
+        TextView responseText = findViewById(R.id.response_text_id);
+
+        viewModel.getResponse().observe(this, response -> {
+            responseText.setText(response);
+        });
+
         // Setup button to navigate to VacationList
         ImageButton button = findViewById(R.id.button);
         button.setOnClickListener(v -> {
@@ -41,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
             viewModel.submitPrompt(prompt);
 
             // Tell ViewModel about the prompt
+            viewModel.getLoading().observe(this, isLoading -> {
+                button.setEnabled(!isLoading);
+            });
         });
 
         // Adjust window insets for Edge-to-Edge support
