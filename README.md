@@ -17,3 +17,35 @@ AI Service
 
 
 PHASE 2
+
+                     USER
+                      │
+                      ▼
+                 MainActivity
+                      │
+                 submitPrompt()
+                      │
+                      ▼
+                MainViewModel
+                      │
+             repository.submitPrompt()
+                      │
+                      ▼
+                MainRepository
+                      │
+                      │
+                 returns result
+                      │
+                      ▼
+                MainViewModel
+                      │
+                response.setValue()
+                      │
+                      ▼
+                 LiveData
+                      │
+                      ▼
+                MainActivity
+                      │
+                      ▼
+                 TextView
