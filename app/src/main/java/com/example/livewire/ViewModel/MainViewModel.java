@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.livewire.Repository.MainRepository;
+
 public class MainViewModel extends ViewModel {
 
     private String prompt;
@@ -15,10 +17,18 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<Boolean> loading =
             new MutableLiveData<>(false);
 
+    private final MainRepository repository;
+
+    public MainViewModel() {
+        repository = new MainRepository();
+    }
+
     public void submitPrompt(String prompt) {
         this.prompt = prompt;
 
         loading.setValue(true);
+
+        String result = repository.submitPrompt(prompt);
 
         // Temporary response to prove communication
         response.setValue("You entered: " + prompt);
