@@ -19,7 +19,7 @@ public class AIService {
     private final OkHttpClient client = new OkHttpClient();
 
     private static final String URL =
-            "http://10.0.2.2:8000/chat";
+            "http://10.0.0.1:8000/chat";
 
     public interface ServiceCallback {
         void onResult(String response);
