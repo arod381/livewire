@@ -8,11 +8,11 @@
     tools:context=".UI.MainActivity">
 
     <EditText
-        android:id="@+id/note2"
+        android:id="@+id/edit_text_id"
         android:layout_width="0dp"
         android:layout_height="87dp"
         android:layout_marginBottom="4dp"
-        android:hint="Enter note"
+        android:hint="User input"
         android:inputType="textMultiLine"
         android:lines="3"
         app:layout_constraintBottom_toTopOf="@id/button"

@@ -1,9 +1,15 @@
 package com.example.livewire.UI;
 
+import com.example.livewire.ViewModel.MainViewModel;
+
+import androidx.appcompat.app.WindowDecorActionBar;
+import androidx.lifecycle.ViewModelProvider;
+
 import android.content.Intent;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +21,7 @@ import com.example.livewire.R;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static int numAlert = 0;
+    private String prompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,12 +29,18 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        MainViewModel viewModel =
+                new ViewModelProvider(this).get(MainViewModel.class);
+
+        EditText editText = findViewById(R.id.edit_text_id);
+
         // Setup button to navigate to VacationList
         ImageButton button = findViewById(R.id.button);
         button.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, VacationList.class);
-            intent.putExtra("test", "informational sent");
-            startActivity(intent);
+            String prompt = editText.getText().toString();
+            viewModel.submitPrompt(prompt);
+
+            // Tell ViewModel about the prompt
         });
 
         // Adjust window insets for Edge-to-Edge support
