@@ -13,10 +13,16 @@ import okhttp3.Response;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class AIService {
 
-    private final OkHttpClient client = new OkHttpClient();
+    // Increased timeouts to accommodate slower responses (e.g. long AI generations)
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .build();
 
     private static final String URL =
             "http://10.0.0.1:8000/chat";

@@ -1,8 +1,6 @@
 package com.example.livewire.UI;
 
 import com.example.livewire.ViewModel.MainViewModel;
-
-import androidx.appcompat.app.WindowDecorActionBar;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
@@ -20,21 +18,14 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.livewire.R;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class MainActivity extends AppCompatActivity {
-
-    private String prompt;
-
-    private final ExecutorService executor =
-            Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
 
         MainViewModel viewModel =
                 new ViewModelProvider(this).get(MainViewModel.class);
@@ -43,20 +34,23 @@ public class MainActivity extends AppCompatActivity {
 
         TextView responseText = findViewById(R.id.response_text_id);
 
+        ImageButton button = findViewById(R.id.button);
+
+        // Observe AI response
         viewModel.getResponse().observe(this, response -> {
             responseText.setText(response);
         });
 
-        // Setup button to navigate to VacationList
-        ImageButton button = findViewById(R.id.button);
+        // Observe loading state
+        viewModel.getLoading().observe(this, isLoading -> {
+            button.setEnabled(!isLoading);
+        });
+
+        // Submit prompt
         button.setOnClickListener(v -> {
             String prompt = editText.getText().toString();
             viewModel.submitPrompt(prompt);
 
-            // Tell ViewModel about the prompt
-            viewModel.getLoading().observe(this, isLoading -> {
-                button.setEnabled(!isLoading);
-            });
         });
 
         // Adjust window insets for Edge-to-Edge support
