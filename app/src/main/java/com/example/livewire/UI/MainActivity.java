@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         ProgressBar progressBar = findViewById(R.id.progress_bar);
 
         // Observe AI response
-        viewModel.getResponse().observe(this, response -> {
+        viewModel.getConversation().observe(this, response -> {
             responseText.setText(response);
         });
 

@@ -18,6 +18,9 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<Boolean> loading =
             new MutableLiveData<>(false);
 
+    private final MutableLiveData<String> conversation =
+            new MutableLiveData<>("");
+
     private final MainRepository repository;
 
     public MainViewModel() {
@@ -27,18 +30,54 @@ public class MainViewModel extends ViewModel {
     public void submitPrompt(String prompt) {
         currentPrompt.setValue(prompt);
 
+        String existingConversation = conversation.getValue();
+
+        if (existingConversation == null) {
+            existingConversation = "";
+        }
+
+        conversation.setValue(
+                existingConversation +
+                "\n\nYou: \n" +
+                prompt
+        );
+
         loading.setValue(true);
 
         repository.submitPrompt(prompt, new MainRepository.RepositoryCallback() {
             @Override
             public void onResult(String result) {
-                response.postValue(result);
+
+                String existing = conversation.getValue();
+
+                if (existing == null) {
+                    existing = "";
+                }
+
+                conversation.postValue(
+                        existing +
+                        "\n\nLiveWire:\n" +
+                        result
+                );
+
                 loading.postValue(false);
             }
 
             @Override
             public void onError(String error) {
-                response.postValue("Error: " + error);
+
+                String existing = conversation.getValue();
+
+                if (existing == null) {
+                    existing = "";
+                }
+
+                conversation.postValue(
+                        existing +
+                        "\n\nLiveWire:\nError: " +
+                        error
+                );
+
                 loading.postValue(false);
             }
         });
@@ -47,11 +86,11 @@ public class MainViewModel extends ViewModel {
     public LiveData<String> getCurrentPrompt() {
         return currentPrompt;
     }
-    public LiveData<String> getResponse() {
-        return response;
-    }
-
     public LiveData<Boolean> getLoading() {
         return loading;
+    }
+
+    public LiveData<String> getConversation() {
+        return conversation;
     }
 }
