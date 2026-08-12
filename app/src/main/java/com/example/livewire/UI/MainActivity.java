@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModelProvider;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
         ImageButton button = findViewById(R.id.button);
 
+        ProgressBar progressBar = findViewById(R.id.progress_bar);
+
         // Observe AI response
         viewModel.getResponse().observe(this, response -> {
             responseText.setText(response);
@@ -44,13 +48,22 @@ public class MainActivity extends AppCompatActivity {
         // Observe loading state
         viewModel.getLoading().observe(this, isLoading -> {
             button.setEnabled(!isLoading);
+
+            if (isLoading) {
+                progressBar.setVisibility(View.VISIBLE);
+            } else {
+                progressBar.setVisibility(View.GONE);
+            }
         });
 
         // Submit prompt
         button.setOnClickListener(v -> {
             String prompt = editText.getText().toString();
-            viewModel.submitPrompt(prompt);
 
+            if(!prompt.isEmpty()) {
+                viewModel.submitPrompt(prompt);
+                editText.setText("");
+            }
         });
 
         // Adjust window insets for Edge-to-Edge support

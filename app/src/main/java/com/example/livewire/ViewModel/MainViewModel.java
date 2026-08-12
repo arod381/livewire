@@ -9,7 +9,8 @@ import com.example.livewire.Repository.MainRepository;
 
 public class MainViewModel extends ViewModel {
 
-    private String prompt;
+    private final MutableLiveData<String> currentPrompt =
+            new MutableLiveData<>();
 
     private final MutableLiveData<String> response =
             new MutableLiveData<>();
@@ -24,7 +25,7 @@ public class MainViewModel extends ViewModel {
     }
 
     public void submitPrompt(String prompt) {
-        this.prompt = prompt;
+        currentPrompt.setValue(prompt);
 
         loading.setValue(true);
 
@@ -43,6 +44,9 @@ public class MainViewModel extends ViewModel {
         });
     }
 
+    public LiveData<String> getCurrentPrompt() {
+        return currentPrompt;
+    }
     public LiveData<String> getResponse() {
         return response;
     }
