@@ -7,27 +7,43 @@
     android:layout_height="match_parent"
     tools:context=".UI.MainActivity">
 
-    <TextView
-        android:id="@+id/response_text_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="174dp"
-        android:layout_marginTop="154dp"
-        android:layout_marginEnd="179dp"
-        android:layout_marginBottom="343dp"
-        android:text="LiveWire"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/edit_text_id"
-        app:layout_constraintEnd_toEndOf="parent"
+    <ScrollView
+        android:id="@+id/response_scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/edit_text_id">
+
+        <TextView
+            android:id="@+id/response_text_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:gravity="center"
+            android:text="LiveWire"
+            android:textColor="@color/yellow"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </ScrollView>
 
     <EditText
         android:id="@+id/edit_text_id"
         android:layout_width="0dp"
         android:layout_height="87dp"
         android:layout_marginBottom="4dp"
-        android:hint="User input"
+        android:gravity="center"
+        android:hint="⚡︎"
+        android:textColor="@color/yellow"
+        android:textSize="18sp"
+        android:textStyle="bold"
         android:inputType="textMultiLine"
         android:lines="3"
         app:layout_constraintBottom_toTopOf="@id/button"
