@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -19,6 +18,15 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.livewire.R;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.livewire.Adapter.ChatAdapter;
+import com.example.livewire.Model.ChatMessage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,16 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
         EditText editText = findViewById(R.id.edit_text_id);
 
-        TextView responseText = findViewById(R.id.response_text_id);
-
         ImageButton button = findViewById(R.id.button);
 
         ProgressBar progressBar = findViewById(R.id.progress_bar);
-
-        // Observe AI response
-        viewModel.getConversation().observe(this, response -> {
-            responseText.setText(response);
-        });
 
         // Observe loading state
         viewModel.getLoading().observe(this, isLoading -> {
@@ -54,6 +55,22 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 progressBar.setVisibility(View.GONE);
             }
+        });
+
+        RecyclerView chatRecyclerView =
+                findViewById(R.id.chat_recycler_view);
+
+        ChatAdapter chatAdapter =
+                new ChatAdapter(new ArrayList<>());
+
+        chatRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
+        chatRecyclerView.setAdapter(chatAdapter);
+
+        viewModel.getConversation().observe(this, messages -> {
+            chatAdapter.setMessages(messages);
         });
 
         // Submit prompt

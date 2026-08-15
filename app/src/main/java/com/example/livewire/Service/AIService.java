@@ -19,9 +19,9 @@ public class AIService {
 
     // Increased timeouts to accommodate slower responses (e.g. long AI generations)
     private final OkHttpClient client = new OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(360, TimeUnit.SECONDS)
+            .writeTimeout(360, TimeUnit.SECONDS)
+            .readTimeout(360, TimeUnit.SECONDS)
             .build();
 
     private static final String URL =

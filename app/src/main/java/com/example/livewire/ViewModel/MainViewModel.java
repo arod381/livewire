@@ -5,21 +5,22 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.livewire.Model.ChatMessage;
 import com.example.livewire.Repository.MainRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainViewModel extends ViewModel {
 
     private final MutableLiveData<String> currentPrompt =
             new MutableLiveData<>();
 
-    private final MutableLiveData<String> response =
-            new MutableLiveData<>();
-
     private final MutableLiveData<Boolean> loading =
             new MutableLiveData<>(false);
 
-    private final MutableLiveData<String> conversation =
-            new MutableLiveData<>("");
+    private final MutableLiveData<List<ChatMessage>> conversation =
+            new MutableLiveData<>(new ArrayList<>());
 
     private final MainRepository repository;
 
@@ -28,19 +29,20 @@ public class MainViewModel extends ViewModel {
     }
 
     public void submitPrompt(String prompt) {
+
         currentPrompt.setValue(prompt);
 
-        String existingConversation = conversation.getValue();
+        List<ChatMessage> messages = conversation.getValue();
 
-        if (existingConversation == null) {
-            existingConversation = "";
+        if (messages == null) {
+            messages = new ArrayList<>();
         }
 
-        conversation.setValue(
-                existingConversation +
-                "\n\nYou: \n" +
-                prompt
+        messages.add(
+                new ChatMessage(prompt, ChatMessage.Sender.USER)
         );
+
+        conversation.setValue(messages);
 
         loading.setValue(true);
 
@@ -48,17 +50,17 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onResult(String result) {
 
-                String existing = conversation.getValue();
+                List<ChatMessage> messages = conversation.getValue();
 
-                if (existing == null) {
-                    existing = "";
+                if (messages == null) {
+                    messages = new ArrayList<>();
                 }
 
-                conversation.postValue(
-                        existing +
-                        "\n\nLiveWire:\n" +
-                        result
+                messages.add(
+                        new ChatMessage(result, ChatMessage.Sender.AI)
                 );
+
+                conversation.postValue(messages);
 
                 loading.postValue(false);
             }
@@ -66,17 +68,20 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onError(String error) {
 
-                String existing = conversation.getValue();
+                List<ChatMessage> messages = conversation.getValue();
 
-                if (existing == null) {
-                    existing = "";
+                if (messages == null) {
+                    messages = new ArrayList<>();
                 }
 
-                conversation.postValue(
-                        existing +
-                        "\n\nLiveWire:\nError: " +
-                        error
+                messages.add(
+                        new ChatMessage(
+                                "Error: " + error,
+                                ChatMessage.Sender.AI
+                        )
                 );
+
+                conversation.postValue(messages);
 
                 loading.postValue(false);
             }
@@ -90,7 +95,7 @@ public class MainViewModel extends ViewModel {
         return loading;
     }
 
-    public LiveData<String> getConversation() {
+    public LiveData<List<ChatMessage>> getConversation() {
         return conversation;
     }
 }
