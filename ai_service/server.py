@@ -4,7 +4,7 @@ import requests
 
 app = FastAPI()
 
-OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:1.7b"
 
 class ChatMessage(BaseModel):
