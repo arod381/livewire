@@ -32,11 +32,12 @@ public class MainViewModel extends ViewModel {
 
         currentPrompt.setValue(prompt);
 
-        List<ChatMessage> messages = conversation.getValue();
+        List<ChatMessage> existing = conversation.getValue();
 
-        if (messages == null) {
-            messages = new ArrayList<>();
-        }
+        List<ChatMessage> messages =
+                existing == null
+                        ? new ArrayList<>()
+                        : new ArrayList<>(existing);
 
         messages.add(
                 new ChatMessage(prompt, ChatMessage.Sender.USER)
@@ -53,11 +54,12 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onResult(String result) {
 
-                List<ChatMessage> messages = conversation.getValue();
+                List<ChatMessage> existing = conversation.getValue();
 
-                if (messages == null) {
-                    messages = new ArrayList<>();
-                }
+                List<ChatMessage> messages =
+                        existing == null
+                                ? new ArrayList<>()
+                                : new ArrayList<>(existing);
 
                 messages.add(
                         new ChatMessage(result, ChatMessage.Sender.AI)
