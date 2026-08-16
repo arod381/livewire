@@ -7,8 +7,12 @@ app = FastAPI()
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 MODEL = "qwen3:1.7b"
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
 class ChatRequest(BaseModel):
-    prompt: str
+    messages: list[ChatMessage]
 
 class ChatResponse(BaseModel):
     response: str
@@ -20,9 +24,16 @@ def chat(request: ChatRequest):
         OLLAMA_URL,
         json={
             "model": MODEL,
-            "prompt": request.prompt,
+            "messages": [
+                {
+                    "role": message.role,
+                    "content": message.content
+                }
+                for message in request.messages
+            ],
             "stream": False
-        }
+        },
+        timeout=360
     )
 
     ollama_response.raise_for_status()
@@ -30,5 +41,5 @@ def chat(request: ChatRequest):
     data = ollama_response.json()
 
     return ChatResponse(
-        response=data["response"]
+        response=data["message"]["content"]
     )

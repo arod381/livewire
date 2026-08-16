@@ -46,7 +46,10 @@ public class MainViewModel extends ViewModel {
 
         loading.setValue(true);
 
-        repository.submitPrompt(prompt, new MainRepository.RepositoryCallback() {
+        List<ChatMessage> conversationSnapshot =
+                new ArrayList<>(messages);
+
+        repository.submitPrompt(conversationSnapshot, new MainRepository.RepositoryCallback() {
             @Override
             public void onResult(String result) {
 

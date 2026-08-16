@@ -2,6 +2,10 @@ package com.example.livewire.Repository;
 
 import com.example.livewire.Service.AIService;
 
+import com.example.livewire.Model.ChatMessage;
+
+import java.util.List;
+
 public class MainRepository {
 
     private final AIService aiservice = new AIService();
@@ -10,9 +14,9 @@ public class MainRepository {
         void onError(String error);
     }
 
-    public void submitPrompt(String prompt, RepositoryCallback callback) {
+    public void submitPrompt(List<ChatMessage> messages, RepositoryCallback callback) {
 
-        aiservice.sendPrompt(prompt, new AIService.ServiceCallback() {
+        aiservice.sendPrompt(messages, new AIService.ServiceCallback() {
             @Override
             public void onResult(String response) {
                 callback.onResult(response);
