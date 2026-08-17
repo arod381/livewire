@@ -13,6 +13,9 @@ import java.util.List;
 
 public class MainViewModel extends ViewModel {
 
+    private final MutableLiveData<Integer> contextLimit =
+            new MutableLiveData<>(10);
+
     private final MutableLiveData<String> currentPrompt =
             new MutableLiveData<>();
 
@@ -47,10 +50,45 @@ public class MainViewModel extends ViewModel {
 
         loading.setValue(true);
 
+        int limit = contextLimit.getValue() != null
+                ? contextLimit.getValue()
+                : 10;
+
+        List<ChatMessage> aiContext;
+
+        if (limit == 0) {
+
+            // Context OFF:
+            // Send only the current user prompt
+            aiContext = new ArrayList<>();
+
+            aiContext.add(
+                    new ChatMessage(
+                            prompt,
+                            ChatMessage.Sender.USER
+                    )
+            );
+
+        } else if (limit == -1 || messages.size() <= limit) {
+
+            // All context
+            aiContext = new ArrayList<>(messages);
+
+        } else {
+
+            // Limited recent context
+            aiContext = new ArrayList<>(
+                    messages.subList(
+                            messages.size() - limit,
+                            messages.size()
+                    )
+            );
+        }
+
         List<ChatMessage> conversationSnapshot =
                 new ArrayList<>(messages);
 
-        repository.submitPrompt(conversationSnapshot, new MainRepository.RepositoryCallback() {
+        repository.submitPrompt(aiContext, new MainRepository.RepositoryCallback() {
             @Override
             public void onResult(String result) {
 
@@ -91,6 +129,14 @@ public class MainViewModel extends ViewModel {
                 loading.postValue(false);
             }
         });
+    }
+
+    public LiveData<Integer> getContextLimit() {
+        return contextLimit;
+    }
+
+    public void setContextLimit(int limit) {
+        contextLimit.setValue(limit);
     }
 
     public LiveData<String> getCurrentPrompt() {

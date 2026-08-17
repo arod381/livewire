@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="context_options">
+        <item>Off</item>
+        <item>4 messages</item>
+        <item>10 messages</item>
+        <item>20 messages</item>
+        <item>50 messages</item>
+        <item>All</item>
+    </string-array>
+
+</resources>

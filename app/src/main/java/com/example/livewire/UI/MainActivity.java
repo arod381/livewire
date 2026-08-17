@@ -7,6 +7,7 @@ import android.content.Intent;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -25,6 +26,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.livewire.Adapter.ChatAdapter;
 import com.example.livewire.Model.ChatMessage;
 
+import android.widget.Spinner;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +39,56 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-
         MainViewModel viewModel =
                 new ViewModelProvider(this).get(MainViewModel.class);
+
+        Spinner contextSpinner =
+                findViewById(R.id.context_spinner);
+
+        contextSpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id) {
+
+                        switch (position) {
+
+                            case 0:
+                                viewModel.setContextLimit(0);
+                                break;
+
+                            case 1:
+                                viewModel.setContextLimit(4);
+                                break;
+
+                            case 2:
+                                viewModel.setContextLimit(10);
+                                break;
+
+                            case 3:
+                                viewModel.setContextLimit(20);
+                                break;
+
+                            case 4:
+                                viewModel.setContextLimit(50);
+                                break;
+
+                            case 5:
+                                viewModel.setContextLimit(-1);
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(
+                            AdapterView<?> parent) {
+                    }
+                }
+        );
 
         EditText editText = findViewById(R.id.edit_text_id);
 
