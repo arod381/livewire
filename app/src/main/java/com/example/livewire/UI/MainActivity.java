@@ -22,6 +22,7 @@ import com.example.livewire.R;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.livewire.Adapter.ChatAdapter;
 import com.example.livewire.Model.ChatMessage;
@@ -39,56 +40,21 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        ViewPager2 viewPager =
+                findViewById(R.id.view_pager);
+
+        viewPager.setLayoutDirection(
+                View.LAYOUT_DIRECTION_LTR
+        );
+
+        MainPagerAdapter adapter =
+                new MainPagerAdapter(this);
+
+        viewPager.setAdapter(adapter);
+
+
         MainViewModel viewModel =
                 new ViewModelProvider(this).get(MainViewModel.class);
-
-        Spinner contextSpinner =
-                findViewById(R.id.context_spinner);
-
-        contextSpinner.setOnItemSelectedListener(
-                new AdapterView.OnItemSelectedListener() {
-
-                    @Override
-                    public void onItemSelected(
-                            AdapterView<?> parent,
-                            View view,
-                            int position,
-                            long id) {
-
-                        switch (position) {
-
-                            case 0:
-                                viewModel.setContextLimit(0);
-                                break;
-
-                            case 1:
-                                viewModel.setContextLimit(4);
-                                break;
-
-                            case 2:
-                                viewModel.setContextLimit(10);
-                                break;
-
-                            case 3:
-                                viewModel.setContextLimit(20);
-                                break;
-
-                            case 4:
-                                viewModel.setContextLimit(50);
-                                break;
-
-                            case 5:
-                                viewModel.setContextLimit(-1);
-                                break;
-                        }
-                    }
-
-                    @Override
-                    public void onNothingSelected(
-                            AdapterView<?> parent) {
-                    }
-                }
-        );
 
         EditText editText = findViewById(R.id.edit_text_id);
 
@@ -110,16 +76,20 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView chatRecyclerView =
                 findViewById(R.id.chat_recycler_view);
 
-        ChatAdapter chatAdapter =
-                new ChatAdapter(new ArrayList<>());
-
         chatRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
+        ChatAdapter chatAdapter =
+                new ChatAdapter(new ArrayList<>());
+
         chatRecyclerView.setAdapter(chatAdapter);
 
         viewModel.getConversation().observe(this, messages -> {
+            android.util.Log.d(
+                    "LiveWire",
+                    "CONVERSATION UPDATED: " + messages.size()
+            );
             chatAdapter.setMessages(messages);
         });
 
@@ -138,13 +108,6 @@ public class MainActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
-        });
-
-        // Report button to launch ReportActivity
-        Button reportButton = findViewById(R.id.reportButton);
-        reportButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, ReportActivity.class);
-            startActivity(intent);
         });
     }
 }

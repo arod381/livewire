@@ -1,11 +1,36 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+import time
 
 app = FastAPI()
 
+SERVER_START_TIME = time.time()
+
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 MODEL = "qwen3:1.7b"
+
+MODEL_CONFIG = {
+    "name": "Qwen",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "top_k": 10,
+    "max_tokens": 100
+}
+
+@app.get("/diagnostics")
+def diagnostics():
+
+    return {
+        "server": {
+            "status": "healthy",
+            "uptime_seconds": round(
+                time.time() - SERVER_START_TIME, 2
+            )
+        },
+
+        "model": MODEL_CONFIG
+    }
 
 class ChatMessage(BaseModel):
     role: str

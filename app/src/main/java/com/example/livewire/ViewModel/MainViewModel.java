@@ -92,6 +92,11 @@ public class MainViewModel extends ViewModel {
             @Override
             public void onResult(String result) {
 
+                android.util.Log.d(
+                        "LiveWire",
+                        "AI RESPONSE: " + result
+                );
+
                 List<ChatMessage> existing = conversation.getValue();
 
                 List<ChatMessage> messages =

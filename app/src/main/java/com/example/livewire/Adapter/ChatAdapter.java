@@ -46,6 +46,11 @@ public class ChatAdapter
 
         ChatMessage message = messages.get(position);
 
+        android.util.Log.d(
+                "LiveWire",
+                "BIND MESSAGE " + position + ": " + message.getMessage()
+        );
+
         holder.messageText.setText(message.getMessage());
     }
 
