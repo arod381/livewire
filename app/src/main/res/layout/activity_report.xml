@@ -6,9 +6,9 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/reportTextView"
+        android:id="@+id/diagnostics_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Notification Report"
-        android:textSize="18sp" />
+        android:padding="16dp"
+        android:textSize="16sp" />
 </LinearLayout>

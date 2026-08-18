@@ -4,8 +4,10 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.livewire.R;
+import com.example.livewire.ViewModel.MainViewModel;
 
 public class ReportActivity extends AppCompatActivity {
 
@@ -14,7 +16,18 @@ public class ReportActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report);
 
-        TextView reportTextView = findViewById(R.id.reportTextView);
+        MainViewModel viewModel =
+                new ViewModelProvider(this)
+                        .get(MainViewModel.class);
+
+        TextView diagnosticsText =
+                findViewById(R.id.diagnostics_text);
+
+        viewModel.getDiagnostics().observe(this, diagnostics -> {
+            diagnosticsText.setText(diagnostics);
+        });
+
+        viewModel.loadDiagnostics();
 
         // Generate the report text
         StringBuilder report = new StringBuilder("Notification Report\n\n");
@@ -29,6 +42,5 @@ public class ReportActivity extends AppCompatActivity {
                         .append("\n\n");
             }
         }
-        reportTextView.setText(report.toString());
     }
 }

@@ -1,11 +1,13 @@
 package com.example.livewire.UI;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,5 +29,25 @@ public class SettingsFragment extends Fragment {
                 container,
                 false
         );
+    }
+
+    @Override
+    public void onViewCreated(
+            @NonNull View view,
+            @Nullable Bundle savedInstanceState) {
+
+        super.onViewCreated(view, savedInstanceState);
+
+        Button reportButton =
+                view.findViewById(R.id.reportButton);
+
+        reportButton.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(requireContext(),
+                            ReportActivity.class);
+
+            startActivity(intent);
+        });
     }
 }

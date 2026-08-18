@@ -42,7 +42,8 @@
             android:parentActivityName=".UI.MainActivity" />
 
         <activity
-            android:name=".UI.ReportActivity" />
+            android:name=".UI.ReportActivity"
+            android:exported="false" />
 
         <activity
             android:name=".UI.MainActivity"

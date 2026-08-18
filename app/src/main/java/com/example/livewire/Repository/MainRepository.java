@@ -28,4 +28,22 @@ public class MainRepository {
             }
         });
     }
+
+    public void getDiagnostics(RepositoryCallback callback) {
+
+        aiservice.getDiagnostics(
+                new AIService.ServiceCallback() {
+
+                    @Override
+                    public void onResult(String response) {
+                        callback.onResult(response);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        callback.onError(error);
+                    }
+                }
+        );
+    }
 }

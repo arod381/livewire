@@ -25,6 +25,9 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<List<ChatMessage>> conversation =
             new MutableLiveData<>(new ArrayList<>());
 
+    private final MutableLiveData<String> diagnostics =
+            new MutableLiveData<>();
+
     private final MainRepository repository;
 
     public MainViewModel() {
@@ -136,6 +139,30 @@ public class MainViewModel extends ViewModel {
         });
     }
 
+    public void loadDiagnostics() {
+
+        repository.getDiagnostics(
+                new MainRepository.RepositoryCallback() {
+
+                    @Override
+                    public void onResult(String result) {
+                        diagnostics.postValue(result);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        diagnostics.postValue(
+                                "Error: " + error
+                        );
+                    }
+                }
+        );
+    }
+
+    public LiveData<String> getDiagnostics() {
+        return diagnostics;
+    }
+
     public LiveData<Integer> getContextLimit() {
         return contextLimit;
     }
@@ -154,4 +181,5 @@ public class MainViewModel extends ViewModel {
     public LiveData<List<ChatMessage>> getConversation() {
         return conversation;
     }
+
 }

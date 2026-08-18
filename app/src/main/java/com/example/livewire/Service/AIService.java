@@ -35,6 +35,44 @@ public class AIService {
         void onError(String error);
     }
 
+    public void getDiagnostics(ServiceCallback callback) {
+
+        Request request = new Request.Builder()
+                .url("http://10.0.0.1:8000/diagnostics")
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onFailure(
+                    Call call,
+                    IOException e) {
+
+                callback.onError(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(
+                    Call call,
+                    Response response)
+                    throws IOException {
+
+                if (!response.isSuccessful()) {
+                    callback.onError(
+                            "HTTP error: " + response.code()
+                    );
+                    return;
+                }
+
+                String responseBody =
+                        response.body().string();
+
+                callback.onResult(responseBody);
+            }
+        });
+    }
+
     public void sendPrompt(
             List<ChatMessage> messages,
             ServiceCallback callback) {
