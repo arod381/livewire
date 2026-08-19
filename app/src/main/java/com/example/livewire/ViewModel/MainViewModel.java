@@ -6,6 +6,11 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.livewire.Model.ChatMessage;
+import com.example.livewire.Model.DiagnosticEvent;
+import com.example.livewire.Model.DiagnosticReport;
+import com.example.livewire.Service.DiagnosticEventLogger;
+
+import java.util.List;
 import com.example.livewire.Repository.MainRepository;
 
 import java.util.ArrayList;
@@ -25,7 +30,7 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<List<ChatMessage>> conversation =
             new MutableLiveData<>(new ArrayList<>());
 
-    private final MutableLiveData<String> diagnostics =
+    private final MutableLiveData<DiagnosticReport> diagnostics =
             new MutableLiveData<>();
 
     private final MainRepository repository;
@@ -142,24 +147,23 @@ public class MainViewModel extends ViewModel {
     public void loadDiagnostics() {
 
         repository.getDiagnostics(
-                new MainRepository.RepositoryCallback() {
+                new MainRepository.DiagnosticsRepositoryCallback() {
 
                     @Override
-                    public void onResult(String result) {
-                        diagnostics.postValue(result);
+                    public void onResult(DiagnosticReport report) {
+                        diagnostics.postValue(report);
                     }
 
                     @Override
                     public void onError(String error) {
-                        diagnostics.postValue(
-                                "Error: " + error
-                        );
+
+                        diagnostics.postValue(null);
                     }
                 }
         );
     }
 
-    public LiveData<String> getDiagnostics() {
+    public LiveData<DiagnosticReport> getDiagnostics() {
         return diagnostics;
     }
 

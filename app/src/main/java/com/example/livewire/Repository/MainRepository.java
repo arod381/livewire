@@ -1,8 +1,11 @@
 package com.example.livewire.Repository;
 
+import com.example.livewire.Model.DiagnosticEvent;
+import com.example.livewire.Model.DiagnosticReport;
 import com.example.livewire.Service.AIService;
 
 import com.example.livewire.Model.ChatMessage;
+import com.example.livewire.Service.DiagnosticEventLogger;
 
 import java.util.List;
 
@@ -29,14 +32,24 @@ public class MainRepository {
         });
     }
 
-    public void getDiagnostics(RepositoryCallback callback) {
+    public interface DiagnosticsRepositoryCallback {
+        void onResult(DiagnosticReport report);
+        void onError(String error);
+    }
+
+    public void getDiagnostics(DiagnosticsRepositoryCallback callback) {
 
         aiservice.getDiagnostics(
-                new AIService.ServiceCallback() {
+                new AIService.DiagnosticsCallback() {
 
                     @Override
-                    public void onResult(String response) {
-                        callback.onResult(response);
+                    public void onResult(DiagnosticReport report) {
+                        List<DiagnosticEvent> events =
+                                DiagnosticEventLogger.getEvents();
+
+                        report.setEvents(events);
+
+                        callback.onResult(report);
                     }
 
                     @Override
