@@ -195,6 +195,8 @@ public class AIService {
                                 duration
                         );
 
+                        callback.onError("HTTP error: " + response.code());
+
                         return;
                     }
 
@@ -205,13 +207,16 @@ public class AIService {
 
                         JSONObject jsonResponse = new JSONObject(responseBody);
 
+                        String result =
+                                jsonResponse.getString("response");
+
                         DiagnosticEventLogger.log(
                                 "CHAT_SUCCESS",
                                 "HTTP " + response.code(),
                                 duration
                         );
 
-                        callback.onResult(responseBody);
+                        callback.onResult(result);
 
                     } catch (Exception e) {
 
