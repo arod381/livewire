@@ -2,6 +2,7 @@ package com.livewire.Service;
 
 import com.livewire.Model.ChatMessage;
 import com.livewire.Model.DiagnosticReport;
+import com.livewire.Model.DiagnosticStatistics;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -123,6 +124,181 @@ public class AIService {
 
     public interface DiagnosticsCallback {
         void onResult(DiagnosticReport report);
+        void onError(String error);
+    }
+
+
+    public void analyzeDiagnostics(
+            DiagnosticReport report,
+            AnalysisCallback callback) {
+
+        try {
+
+            JSONObject json = new JSONObject();
+
+            json.put(
+                    "server_status",
+                    report.getServerStatus()
+            );
+
+            json.put(
+                    "uptime_seconds",
+                    report.getUptimeSeconds()
+            );
+
+            json.put(
+                    "model_name",
+                    report.getModelName()
+            );
+
+            json.put(
+                    "temperature",
+                    report.getTemperature()
+            );
+
+            json.put(
+                    "top_p",
+                    report.getTopP()
+            );
+
+            json.put(
+                    "top_k",
+                    report.getTopK()
+            );
+
+            json.put(
+                    "max_tokens",
+                    report.getMaxTokens()
+            );
+
+            DiagnosticStatistics statistics =
+                    report.getStatistics();
+
+            if (statistics != null) {
+
+                json.put(
+                        "total_requests",
+                        statistics.getTotalRequests()
+                );
+
+                json.put(
+                        "successful_requests",
+                        statistics.getSuccessfulRequests()
+                );
+
+                json.put(
+                        "failed_requests",
+                        statistics.getFailedRequests()
+                );
+
+                json.put(
+                        "network_errors",
+                        statistics.getNetworkErrors()
+                );
+
+                json.put(
+                        "http_errors",
+                        statistics.getHttpErrors()
+                );
+
+                json.put(
+                        "parse_errors",
+                        statistics.getParseErrors()
+                );
+
+                json.put(
+                        "average_response_ms",
+                        statistics.getAverageResponseTimeMs()
+                );
+
+                json.put(
+                        "slowest_response_ms",
+                        statistics.getSlowestResponseMs()
+                );
+            }
+
+            RequestBody body =
+                    RequestBody.create(
+                            json.toString(),
+                            MediaType.parse(
+                                    "application/json"
+                            )
+                    );
+
+            Request request =
+                    new Request.Builder()
+                            .url(
+                                    "http://10.0.0.1:8000/analyze"
+                            )
+                            .post(body)
+                            .build();
+
+            client.newCall(request).enqueue(
+                    new Callback() {
+
+                        @Override
+                        public void onFailure(
+                                Call call,
+                                IOException e) {
+
+                            callback.onError(
+                                    e.getMessage()
+                            );
+                        }
+
+                        @Override
+                        public void onResponse(
+                                Call call,
+                                Response response)
+                                throws IOException {
+
+                            if (!response.isSuccessful()) {
+
+                                callback.onError(
+                                        "HTTP error: " +
+                                                response.code()
+                                );
+
+                                return;
+                            }
+
+                            String responseBody =
+                                    response.body().string();
+
+                            try {
+
+                                JSONObject result =
+                                        new JSONObject(
+                                                responseBody
+                                        );
+
+                                callback.onResult(
+                                        result.getString(
+                                                "analysis"
+                                        )
+                                );
+
+                            } catch (Exception e) {
+
+                                callback.onError(
+                                        "Invalid analysis response: " +
+                                                e.getMessage()
+                                );
+                            }
+                        }
+                    }
+            );
+
+        } catch (Exception e) {
+
+            callback.onError(
+                    e.getMessage()
+            );
+        }
+    }
+
+    public interface AnalysisCallback {
+        void onResult(String analysis);
         void onError(String error);
     }
 

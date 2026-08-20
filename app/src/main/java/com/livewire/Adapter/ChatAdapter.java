@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.livewire.Model.ChatMessage;
-import com.example.livewire.R;
+import com.livewire.R;
 
 import java.util.List;
 

@@ -37,6 +37,11 @@ public class MainRepository {
         void onError(String error);
     }
 
+    public interface AnalysisRepositoryCallback {
+        void onResult(String analysis);
+        void onError(String error);
+    }
+
     public void getDiagnostics(DiagnosticsRepositoryCallback callback) {
 
         aiservice.getDiagnostics(
@@ -55,6 +60,35 @@ public class MainRepository {
                     @Override
                     public void onError(String error) {
                         callback.onError(error);
+                    }
+                }
+        );
+    }
+
+    public void analyzeDiagnostics(
+            DiagnosticReport report,
+            AnalysisRepositoryCallback callback) {
+
+        aiservice.analyzeDiagnostics(
+                report,
+                new AIService.AnalysisCallback() {
+
+                    @Override
+                    public void onResult(
+                            String analysis) {
+
+                        callback.onResult(
+                                analysis
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String error) {
+
+                        callback.onError(
+                                error
+                        );
                     }
                 }
         );

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.livewire'
+    namespace 'com.livewire'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.livewire"
+        applicationId "com.livewire"
         minSdk 26
         targetSdk 34
         versionCode 1

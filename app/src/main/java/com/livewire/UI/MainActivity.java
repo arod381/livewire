@@ -21,7 +21,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 // Application resources
-import com.example.livewire.R;
+import com.livewire.R;
 
 // RecyclerView components for displaying lists of messages
 import androidx.recyclerview.widget.LinearLayoutManager;

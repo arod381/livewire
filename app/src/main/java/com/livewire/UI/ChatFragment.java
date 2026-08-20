@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 // References the application's XML layouts and other resources
-import com.example.livewire.R;
+import com.livewire.R;
 
 /**
  * Fragment responsible for displaying the chat screen

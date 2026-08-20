@@ -14,7 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.livewire.Model.ApplicationDiagnostics;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticStatistics;
-import com.example.livewire.R;
+import com.livewire.R;
 import com.livewire.ViewModel.MainViewModel;
 
 public class ReportActivity extends AppCompatActivity {

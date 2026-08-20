@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.livewire.R;
+import com.livewire.R;
 import com.livewire.database.Repository;
 import com.livewire.entities.Excursion;
 import com.livewire.entities.Vacation;

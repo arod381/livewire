@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 
-import com.example.livewire.R;
+import com.livewire.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

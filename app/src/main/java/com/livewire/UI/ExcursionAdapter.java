@@ -10,7 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.livewire.R;
+import com.livewire.R;
 import com.livewire.entities.Excursion;
 
 import java.util.List;

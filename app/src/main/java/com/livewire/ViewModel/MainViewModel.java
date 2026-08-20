@@ -34,6 +34,9 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<DiagnosticReport> diagnostics =
             new MutableLiveData<>();
 
+    private final MutableLiveData<String> diagnosticAnalysis =
+            new MutableLiveData<>();
+
     private final MainRepository repository;
 
     public MainViewModel() {
@@ -174,10 +177,47 @@ public class MainViewModel extends ViewModel {
                 }
         );
     }
+    public void analyzeDiagnostics() {
+
+        DiagnosticReport report =
+                diagnostics.getValue();
+
+        if (report == null) {
+            diagnosticAnalysis.postValue(
+                    "No diagnostic report available."
+            );
+            return;
+        }
+
+        repository.analyzeDiagnostics(
+                report,
+                new MainRepository.AnalysisRepositoryCallback() {
+
+                    @Override
+                    public void onResult(
+                            String analysis) {
+
+                        diagnosticAnalysis.postValue(
+                                analysis
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String error) {
+
+                        diagnosticAnalysis.postValue(
+                                "Analysis error: " + error);
+                    }
+                }
+        );
+    }
 
     public LiveData<DiagnosticReport> getDiagnostics() {
         return diagnostics;
     }
+
+    public LiveData<String> getDiagnosticAnalysis() { return diagnosticAnalysis; }
 
     public LiveData<Integer> getContextLimit() {
         return contextLimit;
