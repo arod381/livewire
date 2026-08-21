@@ -54,7 +54,7 @@ def diagnostics():
         "model": MODEL_CONFIG
     }
 
-@app.get("/analyze")
+@app.post("/analyze")
 def analyze(request: DiagnosticAnalysisRequest):
 
     prompt = f"""
