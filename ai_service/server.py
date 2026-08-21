@@ -32,7 +32,6 @@ class DiagnosticAnalysisRequest(BaseModel):
     total_requests: int
     successful_requests: int
     failed_requests: int
-    failed_requests: int
     network_errors: int
     http_errors: int
     parse_errors: int
@@ -87,19 +86,40 @@ Average Response Time: {request.average_response_ms} ms
 Slowest Response Time: {request.slowest_response_ms} ms
 
 Provide a concise diagnostic assessment.
+
 If the application appears healthy, say so.
-If there are problems, identify the evidence and likely cause.
-Do not recommend changing anything unless the available
-evidence supports the recommendation.
+
+If there are problems, identify:
+1. The evidence
+2. The likely cause
+3. The severity
+
+Do not recommend changing anything unless the
+available evidence supports the recommendation.
 """
 
-    # Use the same model-generation mechanism
-    # currently used by /chat.
 
-    result = generate_response(prompt)
+    ollama_response = requests.post(
+        OLLAMA_URL,
+        json={
+            "model": MODEL,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "stream": False
+        },
+        timeout=360
+    )
+
+    ollama_response.raise_for_status()
+
+    data = ollama_response.json()
 
     return {
-        "analysis": result
+        "analysis": data["message"]["content"]
     }
 
 class ChatMessage(BaseModel):
