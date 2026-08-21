@@ -65,30 +65,20 @@ public class MainRepository {
         );
     }
 
-    public void analyzeDiagnostics(
-            DiagnosticReport report,
-            AnalysisRepositoryCallback callback) {
+    public void analyzeDiagnostics(DiagnosticReport report, AnalysisRepositoryCallback callback) {
 
         aiservice.analyzeDiagnostics(
                 report,
                 new AIService.AnalysisCallback() {
 
                     @Override
-                    public void onResult(
-                            String analysis) {
-
-                        callback.onResult(
-                                analysis
-                        );
+                    public void onResult(String analysis) {
+                        callback.onResult(analysis);
                     }
 
                     @Override
-                    public void onError(
-                            String error) {
-
-                        callback.onError(
-                                error
-                        );
+                    public void onError(String error) {
+                        callback.onError(error);
                     }
                 }
         );

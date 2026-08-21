@@ -1,5 +1,7 @@
 package com.livewire.ViewModel;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -173,6 +175,7 @@ public class MainViewModel extends ViewModel {
                     public void onError(String error) {
 
                         diagnostics.postValue(null);
+                        diagnosticAnalysis.postValue("Diagnostics error: " + error);
                     }
                 }
         );
@@ -196,6 +199,11 @@ public class MainViewModel extends ViewModel {
                     @Override
                     public void onResult(
                             String analysis) {
+
+                        Log.d(
+                                "LiveWire",
+                                "VIEWMODEL ANALYSIS RECEIVED: " + analysis
+                        );
 
                         diagnosticAnalysis.postValue(
                                 analysis

@@ -1,8 +1,12 @@
 package com.livewire.Service;
 
+import android.util.Log;
+
 import com.livewire.Model.ChatMessage;
 import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
+
+import com.livewire.Service.DiagnosticEventLogger;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -264,19 +268,18 @@ public class AIService {
 
                             String responseBody =
                                     response.body().string();
+                            Log.d("LiveWire", "ANALYZE RESPONSE: " + responseBody);
 
                             try {
 
                                 JSONObject result =
-                                        new JSONObject(
-                                                responseBody
-                                        );
+                                        new JSONObject(responseBody);
 
-                                callback.onResult(
-                                        result.getString(
-                                                "analysis"
-                                        )
-                                );
+                                String analysis =
+                                        result.getString("analysis");
+
+                                Log.d("LiveWire", "ANALYSIS PARSED: " + analysis);
+                                callback.onResult(analysis);
 
                             } catch (Exception e) {
 
