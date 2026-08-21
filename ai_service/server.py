@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 import requests
 import time
 
@@ -18,6 +19,27 @@ MODEL_CONFIG = {
     "max_tokens": 100
 }
 
+class DiagnosticAnalysisRequest(BaseModel):
+    server_status: str
+    uptime_seconds: float
+
+    model_name: str
+    temperature: float
+    top_p: float
+    top_k: int
+    max_tokens: int
+
+    total_requests: int
+    successful_requests: int
+    failed_requests: int
+    failed_requests: int
+    network_errors: int
+    http_errors: int
+    parse_errors: int
+
+    average_response_ms: float
+    slowest_response_ms: float
+
 @app.get("/diagnostics")
 def diagnostics():
 
@@ -30,6 +52,54 @@ def diagnostics():
         },
 
         "model": MODEL_CONFIG
+    }
+
+@app.get("/analyze")
+def analyze(request: DiagnosticAnalysisRequest):
+
+    prompt = f"""
+You are analyzing the LiveWire application itself.
+
+Review the following diagnostic information and identify
+actual problems, abnormal behavior, or potential concerns.
+
+Do not invent problems that are not supported by the data.
+
+SERVER
+Status: {request.server_status}
+Uptime: {request.uptime_seconds} seconds
+
+MODEL
+Name: {request.model_name}
+Temperature: {request.temperature}
+Top P: {request.top_p}
+Top K: {request.top_k}
+Max Tokens: {request.max_tokens}
+
+PERFORMANCE
+Total Requests: {request.total_requests}
+Successful Requests: {request.successful_requests}
+Failed Requests: {request.failed_requests}
+Network Errors: {request.network_errors}
+HTTP Errors: {request.http_errors}
+Parse Errors: {request.parse_errors}
+Average Response Time: {request.average_response_ms} ms
+Slowest Response Time: {request.slowest_response_ms} ms
+
+Provide a concise diagnostic assessment.
+If the application appears healthy, say so.
+If there are problems, identify the evidence and likely cause.
+Do not recommend changing anything unless the available
+evidence supports the recommendation.
+"""
+
+    # Use the same model-generation mechanism
+    # currently used by /chat.
+
+    result = generate_response(prompt)
+
+    return {
+        "analysis": result
     }
 
 class ChatMessage(BaseModel):
