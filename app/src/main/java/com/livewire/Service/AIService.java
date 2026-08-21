@@ -3,6 +3,7 @@ package com.livewire.Service;
 import android.util.Log;
 
 import com.livewire.Model.ChatMessage;
+import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
 
@@ -221,6 +222,50 @@ public class AIService {
                 );
             }
 
+            JSONArray eventsJson = new JSONArray();
+
+            List<DiagnosticEvent> events =
+                    report.getEvents();
+
+            if (events != null) {
+
+                int start =
+                        Math.max(0, events.size() - 50);
+
+                for (int i = start; i < events.size(); i++) {
+
+                    DiagnosticEvent event =
+                            events.get(i);
+
+                    JSONObject eventJson =
+                            new JSONObject();
+
+                    eventJson.put(
+                            "type",
+                            event.getType()
+                    );
+
+                    eventJson.put(
+                            "details",
+                            event.getDetails()
+                    );
+
+                    eventJson.put(
+                            "details",
+                            event.getTimestamp()
+                    );
+
+                    eventJson.put(
+                            "duration_ms",
+                            event.getDurationMs()
+                    );
+
+                    eventsJson.put(eventJson);
+                }
+            }
+
+            json.put("events", eventsJson);
+
             RequestBody body =
                     RequestBody.create(
                             json.toString(),
@@ -228,6 +273,7 @@ public class AIService {
                                     "application/json"
                             )
                     );
+
 
             Request request =
                     new Request.Builder()

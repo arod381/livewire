@@ -39,6 +39,8 @@ class DiagnosticAnalysisRequest(BaseModel):
     average_response_ms: float
     slowest_response_ms: float
 
+    events: list[dict]
+
 @app.get("/diagnostics")
 def diagnostics():
 
@@ -85,14 +87,37 @@ Parse Errors: {request.parse_errors}
 Average Response Time: {request.average_response_ms} ms
 Slowest Response Time: {request.slowest_response_ms} ms
 
-Provide a concise diagnostic assessment.
+EVENT HISTORY
+{request.events}
 
-If the application appears healthy, say so.
+Analyze the LiveWire application based only on the supplied
+diagnostic information.
 
-If there are problems, identify:
-1. The evidence
-2. The likely cause
-3. The severity
+Look for:
+
+1. Repeated failures
+2. Recurring error types
+3. Unusually slow responses
+4. Patterns in response times
+5. Network problems
+6. HTTP failures
+7. Response parsing failures
+8. Evidence that the application is behaving normally
+
+Distinguish isolated events from recurring patterns.
+
+Do not invent problems that aren't supported by the data.
+
+For each significant problem, identify:
+- Evidence
+- Likely cause
+- Severity
+
+If no significant problem is supported by the evidence,
+state that the application appears healthy.
+
+Do not modify the application or recommend changes unless
+the diagnostic evidence supports the recommendation.
 
 Do not recommend changing anything unless the
 available evidence supports the recommendation.

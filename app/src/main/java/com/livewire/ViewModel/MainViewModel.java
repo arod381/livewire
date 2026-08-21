@@ -159,7 +159,9 @@ public class MainViewModel extends ViewModel {
                     public void onResult(DiagnosticReport report) {
 
                         List<DiagnosticEvent> events =
-                                DiagnosticEventLogger.getEvents();
+                                new ArrayList<>(
+                                        DiagnosticEventLogger.getEvents()
+                                );
 
                         report.setEvents(events);
 
