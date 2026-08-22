@@ -147,19 +147,5 @@ public class ReportActivity extends AppCompatActivity {
             // Start analysis only after we have a real report
             viewModel.analyzeDiagnostics();
         });
-
-        // Generate the report text
-        StringBuilder report = new StringBuilder("Notification Report\n\n");
-        if (CReceiver.notificationList.isEmpty()) {
-            report.append("No notifications recorded yet.");
-        } else {
-            for (CReceiver.NotificationData data : CReceiver.notificationList) {
-                report.append("ID: ").append(data.id)
-                        .append("\nText: ").append(data.text)
-                        .append("\nChannel: ").append(data.channel)
-                        .append("\nTime: ").append(data.timestamp)
-                        .append("\n\n");
-            }
-        }
     }
 }
