@@ -21,6 +21,8 @@ import com.livewire.Model.ChatMessage;
 import com.livewire.Service.DiagnosticEventLogger;
 
 // Java List collection
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.List;
 
 /**
@@ -50,6 +52,113 @@ public class MainRepository {
     // network-related operations to it
     private final AIService aiservice = new AIService();
 
+    private final ExecutorService databaseExecutor =
+            Executors.newSingleThreadExecutor();
+
+    public void saveDynamo(
+            DynamoResponse response,
+            DynamoRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .dynamoResponseDao()
+                        .insert(response);
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void getDynamos(
+            DynamosRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                List<DynamoResponse> responses =
+                        powerplant
+                                .dynamoResponseDao()
+                                .getAll();
+
+                callback.onResult(responses);
+
+            } catch (Exception e) {
+
+                callback.onError(e.getMessage());
+            }
+        });
+    }
+
+    public void deleteDynamo(
+            DynamoResponse response,
+            DynamoRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .dynamoResponseDao()
+                        .delete(response);
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void deleteAllDynamos(
+            DynamoRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .dynamoResponseDao()
+                        .deleteAll();
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public interface DynamoRepositoryCallback{
+        void onComplete();
+        void onError(String error);
+    }
+
+    public interface DynamosRepositoryCallback{
+        void onResult(List<DynamoResponse> responses);
+        void onError(String error);
+    }
     public MainRepository(Context context) {
 
         powerplant = Room.databaseBuilder(

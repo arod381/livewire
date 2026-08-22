@@ -14,6 +14,7 @@ import com.livewire.Model.ChatMessage;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
+import com.livewire.Entity.DynamoResponse;
 
 import com.livewire.Service.DiagnosticAnalyzer;
 import com.livewire.Service.DiagnosticEventLogger;
@@ -92,6 +93,9 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<String> diagnosticAnalysis =
             new MutableLiveData<>();
 
+    private final MutableLiveData<List<DynamoResponse>> dynamos =
+            new MutableLiveData<>(new ArrayList<>());
+
     /*
      * Repository responsible for communicating with the AI/backend layer
      *
@@ -107,6 +111,12 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
 
         repository = new MainRepository(application);
+
+        loadDynamos();
+    }
+
+    public LiveData<List<DynamoResponse>> getDynamos() {
+        return dynamos;
     }
 
     /**
@@ -445,6 +455,108 @@ public class MainViewModel extends AndroidViewModel {
                         // Make the error available to the UI
                         diagnosticAnalysis.postValue(
                                 "Analysis error: " + error);
+                    }
+                }
+        );
+    }
+
+    public void saveDynamos(String response) {
+
+        DynamoResponse favorite =
+                new DynamoResponse(
+                        response,
+                        System.currentTimeMillis()
+                );
+
+        repository.saveDynamo(
+                favorite,
+                new MainRepository.DynamoRepositoryCallback() {
+
+                    @Override
+                    public void onComplete() {
+
+                        loadDynamos();
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        Log.e(
+                                "LiveWire",
+                                "SAVE DYNAMO ERROR: " + error
+                        );
+                    }
+                }
+        );
+    }
+
+    public void loadDynamos() {
+
+        repository.getDynamos(
+                new MainRepository.DynamosRepositoryCallback() {
+
+                    @Override
+                    public void onResult(
+                            List<DynamoResponse> responses) {
+
+                        dynamos.postValue(responses);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        Log.e(
+                                "LiveWire",
+                                "LOAD DYNAMOS ERROR: " + error
+                        );
+                    }
+                }
+        );
+    }
+
+    public void deleteDynamo(
+            DynamoResponse response) {
+
+        repository.deleteDynamo(
+                response,
+                new MainRepository.DynamoRepositoryCallback() {
+
+                    @Override
+                    public void onComplete() {
+
+                        loadDynamos();
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        Log.e(
+                                "LiveWire",
+                                "DELETE DYNAMO ERROR: " + error
+                        );
+                    }
+                }
+        );
+    }
+
+    public void deleteAllDynamos() {
+
+        repository.deleteAllDynamos(
+                new MainRepository.DynamoRepositoryCallback() {
+
+                    @Override
+                    public void onComplete() {
+
+                        loadDynamos();
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        Log.e(
+                                "LiveWire",
+                                "DELETE ALL DYNAMOS ERROR: " + error
+                        );
                     }
                 }
         );
