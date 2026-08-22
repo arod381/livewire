@@ -4,6 +4,8 @@ package com.livewire.ViewModel;
 
 import android.util.Log;
 
+import android.app.Application;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -39,7 +41,7 @@ import java.util.ArrayList;
  * managing the underlying data or network operations
  */
 
-public class MainViewModel extends ViewModel {
+public class MainViewModel extends AndroidViewModel {
 
     /*
      * Controls how much conversation history is sent to the AI
@@ -100,8 +102,11 @@ public class MainViewModel extends ViewModel {
     /**
      * Creates the ViewModel and initializes the repository
      */
-    public MainViewModel() {
-        repository = new MainRepository();
+    public MainViewModel(Application application) {
+
+        super(application);
+
+        repository = new MainRepository(application);
     }
 
     /**

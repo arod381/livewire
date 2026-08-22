@@ -1,5 +1,12 @@
 package com.livewire.Repository;
 
+import android.content.Context;
+
+import androidx.room.Room;
+
+import com.livewire.Database.Powerplant;
+import com.livewire.Entity.DynamoResponse;
+
 // Diagnostic data models used by the repository
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
@@ -32,13 +39,27 @@ import java.util.List;
  * 4. Send diagnostic reports to the AI for analysis
  * 5. Pass results/errors back to the caller through callbacks
  */
+
 public class MainRepository {
+
+    private final Powerplant powerplant;
+
 
     // Service used to communicate with the backend AI API
     // The repository owns this service instance and delegates
     // network-related operations to it
     private final AIService aiservice = new AIService();
 
+    public MainRepository(Context context) {
+
+        powerplant = Room.databaseBuilder(
+                context.getApplicationContext(),
+                Powerplant.class,
+                "livewire_powerplant"
+        ).build();
+    }
+
+    // Chat
     /**
      * Callback used when submitting a normal chat prompt
 
@@ -86,6 +107,7 @@ public class MainRepository {
         });
     }
 
+    // Diagnostics
     /**
      * Callback specifically for diagnostic reports
 
