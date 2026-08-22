@@ -1,14 +1,24 @@
 package com.livewire.Service;
 
+// Used for writing diagnostic and debugging messages to Android Logcat
 import android.util.Log;
 
+// Model class representing individual chat messages
 import com.livewire.Model.ChatMessage;
+
+// Model class representing individual diagnostic events
 import com.livewire.Model.DiagnosticEvent;
+
+// Model class containing complete diagnostic information about the AI service
 import com.livewire.Model.DiagnosticReport;
+
+// Model class containing aggregated diagnostic statistics
 import com.livewire.Model.DiagnosticStatistics;
 
+// Logger utility used to record service events such as errors and successful requests
 import com.livewire.Service.DiagnosticEventLogger;
 
+// OkHttp classes used for creating and executing HTTP network requests
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -17,26 +27,79 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+// JSON classes used to create and parse API request and response data
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+// Java utility classes
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * AIService provides communication between the Android application and the
+ * LiveWire AI backend server
+
+ * Responsibilities:
+ * - Sending chat conversations to the AI server
+ * - Retrieving server and model diagnostics
+ * - Sending diagnostic information for AI analysis
+ * - Handling asynchronous network responses
+
+ * All network operations are preformed asynchronously using OkHttp so that
+ * the Android UI thread is not blocked
+ */
 public class AIService {
 
+    /**
+     *  OkHttp client used for all communication with the AI backend
+     *  The timeout values are extended because AI model responses may take
+     *  longer than normal API requests due to processing time.
+     */
     private final OkHttpClient client = new OkHttpClient.Builder()
+
+            // Maximum time allowed to establish a connection with the server
             .connectTimeout(360, TimeUnit.SECONDS)
+
+            // Maximum time allowed for sending request data
             .writeTimeout(360, TimeUnit.SECONDS)
+
+            // Maximum time allowed waiting for the server response
             .readTimeout(360, TimeUnit.SECONDS)
+
+            // Creates the configured HTTP client instance
             .build();
 
+    /**
+     * Base URL used for sending chat requests
+     * The backend server is expected to expose the /chat endpoint
+     */
     private static final String URL =
             "http://10.0.0.1:8000/chat";
 
+    /**
+     * Callback interface used by chat requests
+
+     * Network operations run asynchronously so results are returned through
+     * these callback methods instead of directly returning a value
+     */
     public interface ServiceCallback {
+
+        /**
+         * Called when the AI server successfully returns a response
+         * @param response AI-generated response text
+         */
         void onResult(String response);
+
+        /**
+         * Called when the request fails
+         
+         * Possible causes:
+         * - Network connection failure
+         * - Server unavailable
+         * - Invalid response
+         * @param error Description of failure
+         */
         void onError(String error);
     }
 
