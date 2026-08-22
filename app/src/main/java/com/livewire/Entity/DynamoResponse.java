@@ -1,4 +1,4 @@
-package com.livewire.Entities;
+package com.livewire.Entity;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
