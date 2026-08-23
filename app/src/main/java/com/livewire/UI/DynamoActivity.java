@@ -34,7 +34,10 @@ public class DynamoActivity
                 );
 
         DynamoAdapter adapter =
-                new DynamoAdapter();
+                new DynamoAdapter(
+                        response ->
+                                viewModel.deleteDynamo(response)
+                );
 
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
@@ -46,9 +49,7 @@ public class DynamoActivity
                 .observe(
                         this,
                         responses ->
-                                adapter.setResponses(
-                                        responses
-                                )
+                                adapter.setResponses(responses)
                 );
 
         viewModel.loadDynamos();

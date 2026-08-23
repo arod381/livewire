@@ -3,6 +3,7 @@ package com.livewire.Adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,16 @@ public class DynamoAdapter
 
     private List<DynamoResponse> responses =
             new ArrayList<>();
+
+    private final DeleteDynamoListener deleteListener;
+
+    public interface DeleteDynamoListener {
+        void onDelete(DynamoResponse response);
+    }
+
+    public DynamoAdapter(DeleteDynamoListener deleteListener) {
+        this.deleteListener = deleteListener;
+    }
 
     public void setResponses(
             List<DynamoResponse> responses) {
@@ -67,6 +78,10 @@ public class DynamoAdapter
                         );
 
         holder.timestamp.setText(date);
+
+        holder.deleteButton.setOnClickListener(v ->
+                deleteListener.onDelete(response)
+        );
     }
 
     @Override
@@ -79,6 +94,7 @@ public class DynamoAdapter
 
         TextView responseText;
         TextView timestamp;
+        Button deleteButton;
 
         ViewHolder(@NonNull View itemView) {
 
@@ -92,6 +108,11 @@ public class DynamoAdapter
             timestamp =
                     itemView.findViewById(
                             R.id.dynamo_timestamp
+                    );
+
+            deleteButton =
+                    itemView.findViewById(
+                            R.id.delete_dynamo_button
                     );
         }
     }
