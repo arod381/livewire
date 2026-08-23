@@ -36,6 +36,19 @@ public class SettingsFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
+        Button dynamoButton =
+                view.findViewById(R.id.dynamo_button);
+
+        dynamoButton.setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(requireContext(),
+                            DynamoActivity.class
+                    );
+
+            startActivity(intent);
+        });
+
         Button reportButton =
                 view.findViewById(R.id.reportButton);
 
