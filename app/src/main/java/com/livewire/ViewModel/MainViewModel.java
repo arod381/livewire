@@ -460,7 +460,7 @@ public class MainViewModel extends AndroidViewModel {
         );
     }
 
-    public void saveDynamos(String response) {
+    public void saveDynamo(String response) {
 
         DynamoResponse favorite =
                 new DynamoResponse(

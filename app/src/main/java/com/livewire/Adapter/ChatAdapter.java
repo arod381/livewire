@@ -6,6 +6,7 @@ package com.livewire.Adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 // RecyclerView framework classes
@@ -32,16 +33,26 @@ import java.util.List;
 public class ChatAdapter
         extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
+    public interface DynamoClickListener {
+        void onDynamoClicked(String response);
+    }
+
     // Stores the current collection of messages displayed by the RecyclerView
     private List<ChatMessage> messages;
+    private final DynamoClickListener dynamoClickListener;
 
     /**
      * Constructor
 
      * @param messages Initial list of chat messages to display
      */
-    public ChatAdapter(List<ChatMessage> messages) {
+    public ChatAdapter(
+            List<ChatMessage> messages,
+            DynamoClickListener dynamoClickListener) {
+
         this.messages = messages;
+        this.dynamoClickListener =
+                dynamoClickListener;
     }
 
     /**
@@ -112,6 +123,23 @@ public class ChatAdapter
 
         // Put the message text into the TextView displayed on the screen
         holder.messageText.setText(message.getMessage());
+
+        if (message.getSender() == ChatMessage.Sender.AI) {
+
+            holder.dynamoButton.setVisibility(
+                    View.VISIBLE
+            );
+
+            holder.dynamoButton.setOnClickListener(
+                    v -> dynamoClickListener.onDynamoClicked(
+                            message.getMessage())
+            );
+        } else {
+
+            holder.dynamoButton.setVisibility(
+                    View.GONE
+            );
+        }
     }
 
     /**
@@ -136,6 +164,8 @@ public class ChatAdapter
         // TextView where the chat message content is displayed
         TextView messageText;
 
+        ImageButton dynamoButton;
+
         // Constructor
         // Finds UI elements inside the chat\_message.xml layout
         public ChatViewHolder(@NonNull View itemView) {
@@ -145,6 +175,11 @@ public class ChatAdapter
             messageText = itemView.findViewById(
                     R.id.chat_message_text
             );
+
+            dynamoButton =
+                    itemView.findViewById(
+                            R.id.dynamo_button
+                    );
         }
     }
 }

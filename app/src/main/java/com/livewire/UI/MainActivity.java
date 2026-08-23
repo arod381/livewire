@@ -125,7 +125,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Create adapter with an empty message list initially
         ChatAdapter chatAdapter =
-                new ChatAdapter(new ArrayList<>());
+                new ChatAdapter(new ArrayList<>(),
+                        response -> viewModel.saveDynamo(response)
+                );
 
         // Attach adapter to RecyclerView
         chatRecyclerView.setAdapter(chatAdapter);
