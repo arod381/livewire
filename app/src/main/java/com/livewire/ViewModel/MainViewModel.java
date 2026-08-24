@@ -8,8 +8,8 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
+import com.livewire.Model.AIModel;
 import com.livewire.Model.ChatMessage;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
@@ -57,6 +57,9 @@ public class MainViewModel extends AndroidViewModel {
      */
     private final MutableLiveData<Integer> contextLimit =
             new MutableLiveData<>(10);
+
+    private final MutableLiveData<AIModel> selectedModel =
+            new MutableLiveData<>();
 
     /*
      * Stores the most recently submitted user prompt
@@ -134,6 +137,12 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void submitPrompt(String prompt) {
 
+        AIModel model = selectedModel.getValue();
+
+        if (model == null) {
+            // No model has been selected yet.
+            return;
+        }
         // Store the prompt as the current prompt
         currentPrompt.setValue(prompt);
 
@@ -245,7 +254,10 @@ public class MainViewModel extends AndroidViewModel {
          *
          * The repository handles communication with AIService
          */
-        repository.submitPrompt(aiContext, new MainRepository.RepositoryCallback() {
+        repository.submitPrompt(
+                aiContext,
+                model,
+                new MainRepository.RepositoryCallback() {
 
             /**
              * Called when the AI successfully responds
@@ -320,6 +332,14 @@ public class MainViewModel extends AndroidViewModel {
                 loading.postValue(false);
             }
         });
+    }
+
+    public LiveData<AIModel> getSelectedModel() {
+        return selectedModel;
+    }
+
+    public void setSelectedModel(AIModel model) {
+        selectedModel.setValue(model);
     }
 
     /**

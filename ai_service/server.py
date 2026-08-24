@@ -200,6 +200,8 @@ class ChatMessage(BaseModel):
 # Defines the request body for the /chat endpoint
 class ChatRequest(BaseModel):
 
+    model:str
+
     # List of previous messages forming the conversation history
     messages: list[ChatMessage]
 
@@ -218,7 +220,7 @@ def chat(request: ChatRequest):
     ollama_response = requests.post(
         OLLAMA_URL,
         json={
-            "model": MODEL,
+            "model": request.model,
 
             # Convert Pydantic message objects into
             # Ollama-compatible dictionaries

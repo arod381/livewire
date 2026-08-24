@@ -416,6 +416,7 @@ public class AIService {
 
     public void sendPrompt(
             List<ChatMessage> messages,
+            String model,
             ServiceCallback callback) {
 
         try {
@@ -438,6 +439,8 @@ public class AIService {
             }
 
             json.put("messages", jsonMessages);
+
+            json.put("model", model);
 
             RequestBody body = RequestBody.create(
                     json.toString(),

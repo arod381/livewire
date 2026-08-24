@@ -8,6 +8,7 @@ import com.livewire.Database.Powerplant;
 import com.livewire.Entity.DynamoResponse;
 
 // Diagnostic data models used by the repository
+import com.livewire.Model.AIModel;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 
@@ -189,10 +190,16 @@ public class MainRepository {
      * @param messages Chat conversation/history to send to the AI
      * @param callback Callback that receives the response or error
      */
-    public void submitPrompt(List<ChatMessage> messages, RepositoryCallback callback) {
+    public void submitPrompt(
+            List<ChatMessage> messages,
+            AIModel model,
+            RepositoryCallback callback) {
 
         // Delegate the request to the AI service
-        aiservice.sendPrompt(messages, new AIService.ServiceCallback() {
+        aiservice.sendPrompt(
+                messages,
+                model.getId(),
+                new AIService.ServiceCallback() {
 
             /**
              * Called by AIService when the AI responds successfully
