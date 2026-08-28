@@ -1,5 +1,7 @@
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 # Import FASTAPI framework components used to create HTTP API endpoints
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 # Import Pydantic's BaseModel for defining and validating request/response schemas
 from pydantic import BaseModel
@@ -9,6 +11,8 @@ from typing import Optional
 
 # Requests Library is used to communicate with the local Ollama LLM server
 import requests
+
+import torch
 
 # Time module is used to track server uptime
 import time
@@ -23,8 +27,15 @@ SERVER_START_TIME = time.time()
 # Ollama must be running locally for the AI requests to succeed
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 
-# The LLM model that will handle chat and diagnostic analysis requests
 MODEL = "qwen3:1.7b"
+
+STUDENT_MODEL_PATH = "./student_model"
+
+student_tokenizer = AutoTokenizer.from_pretrained(STUDENT_MODEL_PATH)
+
+student_model = AutoModelForCausalLM.from_pretrained(STUDENT_MODEL_PATH)
+
+student_model.eval()
 
 # Configuration information describing the active model settings
 MODEL_CONFIG = {
@@ -200,7 +211,9 @@ class ChatMessage(BaseModel):
 # Defines the request body for the /chat endpoint
 class ChatRequest(BaseModel):
 
-    model:str
+    model: str
+
+    backend: str
 
     # List of previous messages forming the conversation history
     messages: list[ChatMessage]
@@ -216,7 +229,30 @@ class ChatResponse(BaseModel):
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
 
+    print(
+        "MODEL:",
+        request.model,
+        "BACKEND:",
+        request.backend
+    )
+
+    if request.backend == "ollama":
+        return chat_with_ollama(request)
+
+    elif request.backend == "transformers":
+        return chat_with_transformers(request)
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Unknown backend: "
+                f"{request.backend}"
+            )
+        )
+
     # Send the conversation messages to the local model
+def chat_with_ollama(request: ChatRequest):
     ollama_response = requests.post(
         OLLAMA_URL,
         json={
@@ -249,4 +285,43 @@ def chat(request: ChatRequest):
     # Return the generated text using the defined response model
     return ChatResponse(
         response=data["message"]["content"]
+    )
+
+def chat_with_transformers(request: ChatRequest):
+
+    prompt = ""
+
+    for message in request.messages:
+
+        prompt += (
+            f"{message.role}: "
+            f"{message.content}\n"
+        )
+
+    prompt += "assistant:"
+
+    inputs = student_tokenizer(
+        prompt,
+        return_tensors="pt"
+    )
+
+    with torch.no_grad():
+
+        outputs = student_model.generate(
+            **inputs,
+            max_new_tokens=100,
+            do_sample=True,
+            temperature=0.7,
+            top_p=0.9
+        )
+
+    generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+
+    response = student_tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    )
+
+    return ChatResponse(
+        response=response.strip()
     )

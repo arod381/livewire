@@ -4,13 +4,16 @@ public class AIModel {
 
     private final String id;
     private final String displayName;
+    private final String backend;
 
     public AIModel(
             String id,
-            String displayName) {
+            String displayName,
+            String backend) {
 
         this.id = id;
         this.displayName = displayName;
+        this.backend = backend;
     }
 
     public String getId() {
@@ -19,6 +22,10 @@ public class AIModel {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getBackend() {
+        return backend;
     }
 
     @Override

@@ -4,6 +4,7 @@ package com.livewire.Service;
 import android.util.Log;
 
 // Model class representing individual chat messages
+import com.livewire.Model.AIModel;
 import com.livewire.Model.ChatMessage;
 
 // Model class representing individual diagnostic events
@@ -416,7 +417,7 @@ public class AIService {
 
     public void sendPrompt(
             List<ChatMessage> messages,
-            String model,
+            AIModel model,
             ServiceCallback callback) {
 
         try {
@@ -440,7 +441,9 @@ public class AIService {
 
             json.put("messages", jsonMessages);
 
-            json.put("model", model);
+            json.put("model", model.getId());
+
+            json.put("backend", model.getBackend());
 
             RequestBody body = RequestBody.create(
                     json.toString(),

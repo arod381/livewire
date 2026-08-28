@@ -141,6 +141,12 @@ public class MainViewModel extends AndroidViewModel {
 
         if (model == null) {
             // No model has been selected yet.
+            Log.d(
+                    "LiveWire",
+                    "No AI model selected"
+            );
+
+            loading.setValue(false);
             return;
         }
         // Store the prompt as the current prompt

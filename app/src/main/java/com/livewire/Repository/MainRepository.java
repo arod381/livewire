@@ -198,7 +198,7 @@ public class MainRepository {
         // Delegate the request to the AI service
         aiservice.sendPrompt(
                 messages,
-                model.getId(),
+                model,
                 new AIService.ServiceCallback() {
 
             /**

@@ -10,20 +10,21 @@ public final class ModelCatalog {
 
     public static List<AIModel> getModels() {
 
-        List<AIModel> models =
-                new ArrayList<>();
+        List<AIModel> models = new ArrayList<>();
 
         models.add(
                 new AIModel(
                         "qwen3:1.7b",
-                        "Qwen 3 1.7B"
+                        "Qwen 3 1.7B",
+                        "ollama"
                 )
         );
 
         models.add(
                 new AIModel(
                         "livewire1.0:0",
-                        "Livewire 1.0 1A"
+                        "Livewire 1.0 1A",
+                        "transformers"
                 )
         );
 
