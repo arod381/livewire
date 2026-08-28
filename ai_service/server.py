@@ -9,6 +9,8 @@ from pydantic import BaseModel
 # Optional is imported for fields that may accept None Values
 from typing import Optional
 
+from pathlib import Path
+
 # Requests Library is used to communicate with the local Ollama LLM server
 import requests
 
@@ -29,11 +31,11 @@ OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 
 MODEL = "qwen3:1.7b"
 
-STUDENT_MODEL_PATH = "./student_model"
+STUDENT_MODEL_PATH = str(Path("/home/omegon/Documents/llm_livewire_training/student_model_merged").resolve())
 
-student_tokenizer = AutoTokenizer.from_pretrained(STUDENT_MODEL_PATH)
+student_tokenizer = AutoTokenizer.from_pretrained(STUDENT_MODEL_PATH, local_files_only=True)
 
-student_model = AutoModelForCausalLM.from_pretrained(STUDENT_MODEL_PATH)
+student_model = AutoModelForCausalLM.from_pretrained(STUDENT_MODEL_PATH, local_files_only=True)
 
 student_model.eval()
 
@@ -289,21 +291,24 @@ def chat_with_ollama(request: ChatRequest):
 
 def chat_with_transformers(request: ChatRequest):
 
-    prompt = ""
+    messages = [
+        {"role": message.role, "content": message.content}
+        for message in request.messages
+    ]
 
-    for message in request.messages:
-
-        prompt += (
-            f"{message.role}: "
-            f"{message.content}\n"
-        )
-
-    prompt += "assistant:"
+    prompt = student_tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True, # appends the assistant turn opener, ready for generation
+        enable_thinking=False,
+    )
 
     inputs = student_tokenizer(
         prompt,
         return_tensors="pt"
     )
+
+    im_end_id = student_tokenizer.convert_tokens_to_ids("<|im_end|>")
 
     with torch.no_grad():
 
@@ -312,7 +317,9 @@ def chat_with_transformers(request: ChatRequest):
             max_new_tokens=100,
             do_sample=True,
             temperature=0.7,
-            top_p=0.9
+            top_p=0.9,
+            eos_token_id=[student_tokenizer.eos_token_id, im_end_id],
+            pad_token_id=student_tokenizer.pad_token_id,
         )
 
     generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
@@ -321,6 +328,7 @@ def chat_with_transformers(request: ChatRequest):
         generated_tokens,
         skip_special_tokens=True
     )
+    print(f"Generated response: {repr(response)}")
 
     return ChatResponse(
         response=response.strip()
