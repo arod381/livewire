@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException
 # Import Pydantic's BaseModel for defining and validating request/response schemas
 from pydantic import BaseModel
 
+from llama_cpp import Llama
+
 # Optional is imported for fields that may accept None Values
 from typing import Optional
 
@@ -18,6 +20,8 @@ import torch
 
 # Time module is used to track server uptime
 import time
+
+import os
 
 # Create the FastAPI application instance
 app = FastAPI()
@@ -35,9 +39,12 @@ STUDENT_MODEL_PATH = str(Path("/home/omegon/Documents/llm_livewire_training/stud
 
 student_tokenizer = AutoTokenizer.from_pretrained(STUDENT_MODEL_PATH, local_files_only=True)
 
-student_model = AutoModelForCausalLM.from_pretrained(STUDENT_MODEL_PATH, local_files_only=True)
-
-student_model.eval()
+student_model = Llama(
+    model_path="/home/omegon/Documents/llm_livewire_training/student_model.gguf",
+    n_ctx=2048,          # context window
+    n_threads=os.cpu_count(),  # use all available CPU cores
+    chat_format="chatml",  # Qwen uses ChatML-style formatting (<|im_start|>/<|im_end|>)
+)
 
 # Configuration information describing the active model settings
 MODEL_CONFIG = {
@@ -242,7 +249,7 @@ def chat(request: ChatRequest):
         return chat_with_ollama(request)
 
     elif request.backend == "transformers":
-        return chat_with_transformers(request)
+        return chat_with_llama_cpp(request)
 
     else:
         raise HTTPException(
@@ -287,6 +294,24 @@ def chat_with_ollama(request: ChatRequest):
     # Return the generated text using the defined response model
     return ChatResponse(
         response=data["message"]["content"]
+    )
+
+def chat_with_llama_cpp(request: ChatRequest):
+    messages = [
+        {"role": message.role, "content": message.content}
+        for message in request.messages
+    ]
+
+    output = student_model.create_chat_completion(
+        messages=messages,
+        max_tokens=250,
+        temperature=0.7,
+        top_p=0.9,
+    )
+
+    response = output["choices"][0]["message"]["content"]
+
+    return ChatResponse(response=response.strip()
     )
 
 def chat_with_transformers(request: ChatRequest):
