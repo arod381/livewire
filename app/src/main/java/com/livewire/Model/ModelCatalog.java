@@ -16,7 +16,7 @@ public final class ModelCatalog {
                 new AIModel(
                         "phi4-mini",
                         "Phi 4 3.8B",
-                        "phi4mini_base"
+                        "ollama"
                 )
         );
 
