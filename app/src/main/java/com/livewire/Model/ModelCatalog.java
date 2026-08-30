@@ -14,7 +14,7 @@ public final class ModelCatalog {
 
         models.add(
                 new AIModel(
-                        "phi4:3.8b",
+                        "phi4-mini",
                         "Phi 4 3.8B",
                         "phi4mini_base"
                 )
