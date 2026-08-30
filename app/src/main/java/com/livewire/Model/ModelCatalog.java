@@ -14,9 +14,9 @@ public final class ModelCatalog {
 
         models.add(
                 new AIModel(
-                        "qwen3:1.7b",
-                        "Qwen 3 1.7B",
-                        "ollama"
+                        "phi4:3.8b",
+                        "Phi 4 3.8B",
+                        "phi4mini_base"
                 )
         );
 
@@ -25,6 +25,14 @@ public final class ModelCatalog {
                         "livewire1.0:0",
                         "Livewire 1.0 1A",
                         "transformers"
+                )
+        );
+
+        models.add(
+                new AIModel(
+                        "qwen3:1.7b",
+                        "Qwen 3 1.7B",
+                        "ollama"
                 )
         );
 

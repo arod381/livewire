@@ -46,6 +46,11 @@ student_model = Llama(
     chat_format="chatml",  # Qwen uses ChatML-style formatting (<|im_start|>/<|im_end|>)
 )
 
+PHI4MINI_MODEL_PATH = "microsoft/Phi-4-mini-instruct"
+
+phi4mini_tokenizer = AutoTokenizer.from_pretrained(PHI4MINI_MODEL_PATH)
+phi4mini_model = AutoModelForCausalLM.from_pretrained(PHI4MINI_MODEL_PATH)
+
 # Configuration information describing the active model settings
 MODEL_CONFIG = {
     "name": "Qwen",
@@ -251,6 +256,9 @@ def chat(request: ChatRequest):
     elif request.backend == "transformers":
         return chat_with_llama_cpp(request)
 
+    elif request.backend == "phi4mini_base":
+        return chat_with_phi4mini_base(request)
+
     else:
         raise HTTPException(
             status_code=400,
@@ -259,6 +267,46 @@ def chat(request: ChatRequest):
                 f"{request.backend}"
             )
         )
+
+def chat_with_phi4mini_base(request: ChatRequest):
+
+    messages = [
+        {"role": message.role, "content": message.content}
+        for message in request.messages
+    ]
+
+    prompt = phi4mini_tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+    inputs = phi4mini_tokenizer(
+        prompt,
+        return_tensors="pt"
+    )
+
+    with torch.no_grad():
+
+        outputs = phi4mini_model.generate(
+            **inputs,
+            max_new_tokens=100,
+            do_sample=True,
+            temperature=0.7,
+            top_p=0.9,
+            pad_token_id=phi4mini_tokenizer.pad_token_id or phi4mini_tokenizer.eos_token_id,
+        )
+
+    generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+
+    response = phi4mini_tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    )
+
+    return ChatResponse(
+        response=response.strip()
+    )
 
     # Send the conversation messages to the local model
 def chat_with_ollama(request: ChatRequest):
