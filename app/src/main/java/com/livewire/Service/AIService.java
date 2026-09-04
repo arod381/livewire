@@ -104,10 +104,12 @@ public class AIService {
         void onError(String error);
     }
 
-    public void getDiagnostics(DiagnosticsCallback callback) {
+    public void getDiagnostics(AIModel model, DiagnosticsCallback callback) {
+
+        String url = "http://10.0.0.1:8000/diagnostics" + "?model=" + model.getId();
 
         Request request = new Request.Builder()
-                .url("http://10.0.0.1:8000/diagnostics")
+                .url(url)
                 .get()
                 .build();
 
@@ -199,11 +201,17 @@ public class AIService {
 
     public void analyzeDiagnostics(
             DiagnosticReport report,
+            String modelId,
             AnalysisCallback callback) {
 
         try {
 
             JSONObject json = new JSONObject();
+
+            json.put(
+                    "model",
+                    modelId
+            );
 
             json.put(
                     "server_status",
@@ -315,7 +323,7 @@ public class AIService {
                     );
 
                     eventJson.put(
-                            "details",
+                            "timestamp",
                             event.getTimestamp()
                     );
 

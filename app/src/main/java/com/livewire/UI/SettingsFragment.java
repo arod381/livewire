@@ -116,9 +116,15 @@ public class SettingsFragment extends Fragment {
 
         reportButton.setOnClickListener(v -> {
 
+            AIModel selectedModel = viewModel.getSelectedModel().getValue();
+
             Intent intent =
-                    new Intent(requireContext(),
-                            ReportActivity.class);
+                    new Intent(requireContext(), ReportActivity.class);
+
+            if (selectedModel != null) {
+
+                intent.putExtra("model_id", selectedModel.getId());
+            }
 
             startActivity(intent);
         });

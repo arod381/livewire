@@ -28,14 +28,6 @@ public final class ModelCatalog {
                 )
         );
 
-        models.add(
-                new AIModel(
-                        "qwen3:1.7b",
-                        "Qwen 3 1.7B",
-                        "ollama"
-                )
-        );
-
         return models;
     }
 }

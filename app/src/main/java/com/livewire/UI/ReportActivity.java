@@ -14,9 +14,11 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.livewire.Model.AIModel;
 import com.livewire.Model.ApplicationDiagnostics;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticStatistics;
+import com.livewire.Model.ModelCatalog;
 import com.livewire.R;
 import com.livewire.ViewModel.MainViewModel;
 
@@ -63,8 +65,30 @@ public class ReportActivity extends AppCompatActivity {
 
         ApplicationDiagnostics app = getApplicationDiagnostics();
 
+        String modelId = getIntent().getStringExtra("model_id");
+
+        AIModel selectedModel = null;
+
+        for (AIModel model : ModelCatalog.getModels()) {
+
+            if (model.getId().equals(modelId)) {
+
+                selectedModel = model;
+                break;
+            }
+        }
+
         MainViewModel viewModel = new ViewModelProvider(this)
                         .get(MainViewModel.class);
+
+        if (selectedModel != null) {
+
+            Log.d("LiveWire", "REPORT MODEL: " + selectedModel.getId());
+
+            viewModel.setSelectedModel(selectedModel);
+        } else {
+            Log.e("LiveWire", "REPORT MODEL: No model found for ID: " + modelId);
+        }
 
         TextView diagnosticsText = findViewById(R.id.diagnostics_text);
         TextView analysisText = findViewById(R.id.analysis_text);
@@ -78,8 +102,6 @@ public class ReportActivity extends AppCompatActivity {
                         analysisProgress.setVisibility(View.GONE);
                     }
                 });
-
-        viewModel.loadDiagnostics();
 
         viewModel.getDiagnostics().observe(this, diagnostics -> {
             if (diagnostics == null) {
@@ -147,5 +169,7 @@ public class ReportActivity extends AppCompatActivity {
             // Start analysis only after we have a real report
             viewModel.analyzeDiagnostics();
         });
+
+        viewModel.loadDiagnostics();
     }
 }

@@ -33,11 +33,39 @@ SERVER_START_TIME = time.time()
 # Ollama must be running locally for the AI requests to succeed
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
 
-MODEL = "qwen3:1.7b"
+PHI4MINI_MODEL_PATH = "microsoft/Phi-4-mini-instruct"
 
-STUDENT_MODEL_PATH = str(Path("/home/omegon/Documents/llm_livewire_training/student_model_merged").resolve())
+phi4mini_tokenizer = AutoTokenizer.from_pretrained(PHI4MINI_MODEL_PATH)
+phi4mini_model = AutoModelForCausalLM.from_pretrained(PHI4MINI_MODEL_PATH)
 
-student_tokenizer = AutoTokenizer.from_pretrained(STUDENT_MODEL_PATH, local_files_only=True)
+# Configuration information describing the active model settings
+MODEL_CONFIGS = {
+
+    "phi4-mini": {
+        "name": "Phi-4-mini 3.8B",
+        "backend": "ollama",
+        "path": "microsoft/Phi-4-mini-instruct",
+        "temperature": 0.7, # Controls randomness of generated responses
+        "top_p": 0.9,       # Controls nucleus sampling probability
+        "top_k": 10,        # Limits token selection to the top K choices
+        "max_tokens": 100   # Max number of tokens generated per response
+    },
+    
+    "livewire1.0:0": {
+        "name": "LiveWire 1.0 1A",
+        "backend": "transformers",
+        "path": "/home/omegon/Documents/llm_livewire_training/student_model_merged",
+        "temperature": 0.7, # Controls randomness of generated responses
+        "top_p": 0.9,       # Controls nucleus sampling probability
+        "top_k": 10,        # Limits token selection to the top K choices
+        "max_tokens": 100   # Max number of tokens generated per response
+    }
+
+}
+
+student_config = MODEL_CONFIGS["livewire1.0:0"]
+
+student_tokenizer = AutoTokenizer.from_pretrained(student_config["path"])
 
 student_model = Llama(
     model_path="/home/omegon/Documents/llm_livewire_training/student_model.gguf",
@@ -46,23 +74,21 @@ student_model = Llama(
     chat_format="chatml",  # Qwen uses ChatML-style formatting (<|im_start|>/<|im_end|>)
 )
 
-PHI4MINI_MODEL_PATH = "microsoft/Phi-4-mini-instruct"
+def get_model_config(model_id: str):
 
-phi4mini_tokenizer = AutoTokenizer.from_pretrained(PHI4MINI_MODEL_PATH)
-phi4mini_model = AutoModelForCausalLM.from_pretrained(PHI4MINI_MODEL_PATH)
+    config = MODEL_CONFIGS.get(model_id)
 
-# Configuration information describing the active model settings
-MODEL_CONFIG = {
-    "name": "Qwen",
-    "temperature": 0.7, # Controls randomness of generated responses
-    "top_p": 0.9,       # Controls nucleus sampling probability
-    "top_k": 10,        # Limits token selection to the top K choices
-    "max_tokens": 100   # Max number of tokens generated per response
-}
+    if config is None:
+        raise ValueError(
+            f"Unknown model: {model_id}"
+        )
+    return config
 
 # Defines the expected structure of diagnostic data sent to /analyze endpoint
 # FastAPI automatically validates incoming JSON against this model
 class DiagnosticAnalysisRequest(BaseModel):
+
+    model: str
 
     # Current application health status
     server_status: str
@@ -99,8 +125,10 @@ class DiagnosticAnalysisRequest(BaseModel):
 # Health and configuration endpoint
 # Returns basic server status information and model settings
 @app.get("/diagnostics")
-def diagnostics():
+def diagnostics(model: str):
 
+    config = get_model_config(model)
+    
     return {
         "server": {
             "status": "healthy",
@@ -109,7 +137,15 @@ def diagnostics():
             )
         },
 
-        "model": MODEL_CONFIG
+        "model": {
+            "id": model,
+            "name": config["name"],
+            "backend": config["backend"],
+            "temperature": config["temperature"],
+            "top_p": config["top_p"],
+            "top_k": config["top_k"],
+            "max_tokens": config["max_tokens"]
+        }
     }
 
 # Diagnostic analysis endpoint
@@ -189,7 +225,7 @@ available evidence supports the recommendation.
     ollama_response = requests.post(
         OLLAMA_URL,
         json={
-            "model": MODEL,
+            "model": request.model,
             "messages": [
                 {
                     "role": "user",
@@ -250,14 +286,23 @@ def chat(request: ChatRequest):
         request.backend
     )
 
+    config = get_model_config(request.model)
+
+    if config["backend"] != request.backend:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Model/backend mismatch"
+        )
+
     if request.backend == "ollama":
-        return chat_with_ollama(request)
+        return chat_with_ollama(request, config)
 
     elif request.backend == "transformers":
-        return chat_with_llama_cpp(request)
+        return chat_with_llama_cpp(request, config)
 
     elif request.backend == "phi4mini_base":
-        return chat_with_phi4mini_base(request)
+        return chat_with_phi4mini_base(request, config)
 
     else:
         raise HTTPException(
@@ -268,7 +313,7 @@ def chat(request: ChatRequest):
             )
         )
 
-def chat_with_phi4mini_base(request: ChatRequest):
+def chat_with_phi4mini_base(request: ChatRequest, config: dict):
 
     messages = [
         {"role": message.role, "content": message.content}
@@ -309,7 +354,7 @@ def chat_with_phi4mini_base(request: ChatRequest):
     )
 
     # Send the conversation messages to the local model
-def chat_with_ollama(request: ChatRequest):
+def chat_with_ollama(request: ChatRequest, config: dict):
     ollama_response = requests.post(
         OLLAMA_URL,
         json={
@@ -326,7 +371,14 @@ def chat_with_ollama(request: ChatRequest):
             ],
 
             # Request a complete response
-            "stream": False
+            "stream": False,
+
+            "options": {
+                "temperature": config["temperature"],
+                "top_p": config["top_p"],
+                "top_k": config["top_k"],
+                "num_predict": config["max_tokens"]
+            }
         },
 
         # Prevent requests from hanging indefinitely
@@ -344,7 +396,7 @@ def chat_with_ollama(request: ChatRequest):
         response=data["message"]["content"]
     )
 
-def chat_with_llama_cpp(request: ChatRequest):
+def chat_with_llama_cpp(request: ChatRequest, config: dict):
     messages = [
         {"role": message.role, "content": message.content}
         for message in request.messages
@@ -352,9 +404,10 @@ def chat_with_llama_cpp(request: ChatRequest):
 
     output = student_model.create_chat_completion(
         messages=messages,
-        max_tokens=250,
-        temperature=0.7,
-        top_p=0.9,
+        max_tokens=config["max_tokens"],
+        temperature=config["temperature"],
+        top_p=config["top_p"],
+        top_k=config["top_k"]
     )
 
     response = output["choices"][0]["message"]["content"]
@@ -362,7 +415,7 @@ def chat_with_llama_cpp(request: ChatRequest):
     return ChatResponse(response=response.strip()
     )
 
-def chat_with_transformers(request: ChatRequest):
+def chat_with_transformers(request: ChatRequest, config: dict):
 
     messages = [
         {"role": message.role, "content": message.content}
@@ -387,10 +440,11 @@ def chat_with_transformers(request: ChatRequest):
 
         outputs = student_model.generate(
             **inputs,
-            max_new_tokens=100,
+            max_new_tokens=config["max_tokens"],
             do_sample=True,
-            temperature=0.7,
-            top_p=0.9,
+            temperature=config["temperature"],
+            top_p=config["top_p"],
+            top_k=config["top_k"],
             eos_token_id=[student_tokenizer.eos_token_id, im_end_id],
             pad_token_id=student_tokenizer.pad_token_id,
         )

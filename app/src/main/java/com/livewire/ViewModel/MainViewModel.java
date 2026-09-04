@@ -53,10 +53,10 @@ public class MainViewModel extends AndroidViewModel {
      * -1 = Send the entire conversation
      * >0 = Send only the most recent N messages
      *
-     * Default is 10 messages
+     * Default is 0 messages
      */
     private final MutableLiveData<Integer> contextLimit =
-            new MutableLiveData<>(10);
+            new MutableLiveData<>(0);
 
     private final MutableLiveData<AIModel> selectedModel =
             new MutableLiveData<>();
@@ -182,7 +182,7 @@ public class MainViewModel extends AndroidViewModel {
          */
         int limit = contextLimit.getValue() != null
                 ? contextLimit.getValue()
-                : 10;
+                : 0;
 
         // This list will contain only the messages sent to the AI
         List<ChatMessage> aiContext;
@@ -340,14 +340,16 @@ public class MainViewModel extends AndroidViewModel {
         });
     }
 
+    public void setSelectedModel(AIModel model) {
+        selectedModel.setValue(model);
+
+        Log.d("LiveWire", "SELECTED MODEL SET: " + model.getId());
+    }
+
+
     public LiveData<AIModel> getSelectedModel() {
         return selectedModel;
     }
-
-    public void setSelectedModel(AIModel model) {
-        selectedModel.setValue(model);
-    }
-
     /**
      * Retrieves diagnostic information
 
@@ -358,7 +360,19 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void loadDiagnostics() {
 
+        AIModel model = selectedModel.getValue();
+
+        if (model == null) {
+
+            Log.e("LiveWire", "DIAGNOSTICS: No model selected");
+            diagnostics.postValue(null);
+            return;
+        }
+
+        Log.d("LiveWire", "LOADING DIAGNOSTICS FOR MODEL: " + model.getId());
+
         repository.getDiagnostics(
+                model,
                 new MainRepository.DiagnosticsRepositoryCallback() {
 
                     /**
@@ -366,6 +380,8 @@ public class MainViewModel extends AndroidViewModel {
                      */
                     @Override
                     public void onResult(DiagnosticReport report) {
+
+                        Log.d("LiveWire", "DIAGNOSTICS REPORT RECEIVED");
 
                         /*
                          * Get a snapshot of locally recorded diagnostic
@@ -409,6 +425,8 @@ public class MainViewModel extends AndroidViewModel {
                     @Override
                     public void onError(String error) {
 
+                        Log.e("LiveWire", "DIAGNOSTICS ERROR: " + error);
+
                         // Clear the current diagnostic report
                         diagnostics.postValue(null);
 
@@ -442,6 +460,19 @@ public class MainViewModel extends AndroidViewModel {
             return;
         }
 
+        AIModel model =
+                selectedModel.getValue();
+
+        if (model == null) {
+            diagnosticAnalysis.postValue("No model selected");
+
+            return;
+        }
+
+        String modelId = model.getId();
+
+        Log.d("LiveWire", "ANALYZING DIAGNOSTICS WITH MODEL: " + modelId);
+
         /*
          * Send the report to MainRepository
          *
@@ -450,6 +481,7 @@ public class MainViewModel extends AndroidViewModel {
          */
         repository.analyzeDiagnostics(
                 report,
+                modelId,
                 new MainRepository.AnalysisRepositoryCallback() {
 
                     /**

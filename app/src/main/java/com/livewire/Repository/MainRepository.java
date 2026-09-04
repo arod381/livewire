@@ -256,10 +256,11 @@ public class MainRepository {
 
      * @param callback Callback receiving the completed diagnostic report
      */
-    public void getDiagnostics(DiagnosticsRepositoryCallback callback) {
+    public void getDiagnostics(AIModel model, DiagnosticsRepositoryCallback callback) {
 
         // Ask AIService to retrieve diagnostics from the backend
         aiservice.getDiagnostics(
+                model,
                 new AIService.DiagnosticsCallback() {
 
                     /**
@@ -306,11 +307,15 @@ public class MainRepository {
      * @param report Diagnostic information to analyze
      * @param callback Callback receiving the AI analysis
      */
-    public void analyzeDiagnostics(DiagnosticReport report, AnalysisRepositoryCallback callback) {
+    public void analyzeDiagnostics(
+            DiagnosticReport report,
+            String modelId,
+            AnalysisRepositoryCallback callback) {
 
         // Send the diagnostic report to the AI service
         aiservice.analyzeDiagnostics(
                 report,
+                modelId,
                 new AIService.AnalysisCallback() {
 
                     /**
