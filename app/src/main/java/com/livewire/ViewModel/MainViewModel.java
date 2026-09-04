@@ -56,7 +56,7 @@ public class MainViewModel extends AndroidViewModel {
      * Default is 0 messages
      */
     private final MutableLiveData<Integer> contextLimit =
-            new MutableLiveData<>(0);
+            new MutableLiveData<>(10);
 
     private final MutableLiveData<AIModel> selectedModel =
             new MutableLiveData<>();
@@ -182,7 +182,7 @@ public class MainViewModel extends AndroidViewModel {
          */
         int limit = contextLimit.getValue() != null
                 ? contextLimit.getValue()
-                : 0;
+                : 10;
 
         // This list will contain only the messages sent to the AI
         List<ChatMessage> aiContext;
