@@ -45,20 +45,20 @@ MODEL_CONFIGS = {
         "name": "Phi-4-mini 3.8B",
         "backend": "ollama",
         "path": "microsoft/Phi-4-mini-instruct",
-        "temperature": 0.7, # Controls randomness of generated responses
+        "temperature": 0.8, # Controls randomness of generated responses
         "top_p": 0.9,       # Controls nucleus sampling probability
         "top_k": 10,        # Limits token selection to the top K choices
-        "max_tokens": 100   # Max number of tokens generated per response
+        "max_tokens": 350   # Max number of tokens generated per response
     },
     
     "livewire1.0:0": {
         "name": "LiveWire 1.0 1A",
         "backend": "transformers",
         "path": "/home/omegon/Documents/llm_livewire_training/student_model_merged",
-        "temperature": 0.7, # Controls randomness of generated responses
+        "temperature": 0.8, # Controls randomness of generated responses
         "top_p": 0.9,       # Controls nucleus sampling probability
         "top_k": 10,        # Limits token selection to the top K choices
-        "max_tokens": 100   # Max number of tokens generated per response
+        "max_tokens": 350   # Max number of tokens generated per response
     }
 
 }
@@ -335,10 +335,11 @@ def chat_with_phi4mini_base(request: ChatRequest, config: dict):
 
         outputs = phi4mini_model.generate(
             **inputs,
-            max_new_tokens=100,
+            max_new_tokens=config["max_tokens"],
             do_sample=True,
-            temperature=0.7,
-            top_p=0.9,
+            temperature=config["temperature"],
+            top_p=config["top_p"],
+            top_k=config["top_k"],
             pad_token_id=phi4mini_tokenizer.pad_token_id or phi4mini_tokenizer.eos_token_id,
         )
 
