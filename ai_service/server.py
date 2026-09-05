@@ -84,6 +84,36 @@ def get_model_config(model_id: str):
         )
     return config
 
+class ModelConfigRequest(BaseModel):
+    model: str
+    max_tokens: int
+    temperature: float
+    top_p: float
+    top_k: int
+
+@app.post("/models/config")
+def update_model_config(request: ModelConfigRequest):
+
+    if request.model not in MODEL_CONFIGS:
+        raise HTTPException(status_code=404, detail=f"Unknown model: {request.model}")
+
+    MODEL_CONFIGS[request.model]["max_tokens"] = request.max_tokens
+    MODEL_CONFIGS[request.model]["temperature"] = request.temperature
+    MODEL_CONFIGS[request.model]["top_p"] = request.top_p
+    MODEL_CONFIGS[request.model]["top_k"] = request.top_k
+
+    return {
+        "model": request.model,
+        "config": MODEL_CONFIGS[request.model]
+    }
+
+class ModelConfigRequest(BaseModel):
+    model: str
+    max_tokens: int
+    temperature: float
+    top_p: float
+    top_k: int
+
 # Defines the expected structure of diagnostic data sent to /analyze endpoint
 # FastAPI automatically validates incoming JSON against this model
 class DiagnosticAnalysisRequest(BaseModel):
