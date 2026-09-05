@@ -16,7 +16,12 @@ public final class ModelCatalog {
                 new AIModel(
                         "phi4-mini",
                         "Phi 4 3.8B",
-                        "ollama"
+                        "ollama",
+                        350,
+                        0.8,
+                        0.9,
+                        10
+
                 )
         );
 
@@ -24,7 +29,11 @@ public final class ModelCatalog {
                 new AIModel(
                         "livewire1.0:0",
                         "Livewire 1.0 1A",
-                        "transformers"
+                        "transformers",
+                        350,
+                        0.8,
+                        0.9,
+                        10
                 )
         );
 

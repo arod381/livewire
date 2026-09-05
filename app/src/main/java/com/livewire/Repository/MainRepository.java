@@ -176,9 +176,46 @@ public class MainRepository {
      * onResult() is called when the AI successfully responds
      * onError() is called when the request fails
      */
+
     public interface RepositoryCallback {
         void onResult(String result);
         void onError(String error);
+    }
+
+    public interface ConfigurationRepositoryCallback {
+
+        void onResult(String message);
+
+        void onError(String error);
+    }
+
+    public void updateModelConfiguration(
+            String modelId,
+            int maxTokens,
+            double temperature,
+            double topP,
+            int topK,
+            ConfigurationRepositoryCallback callback) {
+
+        aiservice.updateModelConfiguration(
+                modelId,
+                maxTokens,
+                temperature,
+                topP,
+                topK,
+                new AIService.ConfigurationCallback() {
+
+                    @Override
+                    public void onResult(String message) {
+                        callback.onResult(message);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        callback.onError(error);
+                    }
+                }
+        );
     }
 
     /**

@@ -198,6 +198,98 @@ public class AIService {
         void onError(String error);
     }
 
+    public interface ConfigurationCallback {
+
+        void onResult(String message);
+
+        void onError(String error);
+    }
+
+    public void updateModelConfiguration(
+            String modelId,
+            int maxTokens,
+            double temperature,
+            double topP,
+            int topK,
+            ConfigurationCallback callback) {
+
+        try {
+
+            JSONObject json = new JSONObject();
+
+            json.put("model", modelId);
+            json.put("temperature", temperature);
+            json.put("top_p", topP);
+            json.put("top_k", topK);
+            json.put("max_tokens", maxTokens);
+
+            RequestBody body =
+                    RequestBody.create(
+                            json.toString(),
+                            MediaType.parse("application/json")
+                    );
+
+            Request request =
+                    new Request.Builder()
+                            .url(
+                                    "http://10.0.0.1:8000/models/config"
+                            )
+                            .post(body)
+                            .build();
+
+            client.newCall(request).enqueue(
+                    new Callback() {
+
+                        @Override
+                        public void onFailure(
+                                Call call,
+                                IOException e) {
+
+                            callback.onError(
+                                    e.getMessage()
+                            );
+                        }
+
+                        @Override
+                        public void onResponse(
+                                Call call,
+                                Response response)
+                                throws IOException {
+
+                            if (!response.isSuccessful()) {
+
+                                callback.onError(
+                                        "HTTP error: " +
+                                                response.code()
+                                );
+
+                                return;
+                            }
+
+                            String responseBody =
+                                    response.body().string();
+
+                            Log.d(
+                                    "LiveWire",
+                                    "CONFIG RESPONSE: " +
+                                            responseBody
+                            );
+
+                            callback.onResult(
+                                    responseBody
+                            );
+                        }
+                    }
+            );
+
+        } catch (Exception e) {
+
+            callback.onError(
+                    e.getMessage()
+            );
+        }
+    }
+
 
     public void analyzeDiagnostics(
             DiagnosticReport report,

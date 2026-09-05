@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -97,6 +99,288 @@ public class SettingsFragment extends Fragment {
                     }
                 }
         );
+
+        TextView maxTokensLabel =
+                view.findViewById(R.id.max_tokens_label);
+
+        TextView temperatureLabel =
+                view.findViewById(R.id.temperature_label);
+
+        TextView topPLabel =
+                view.findViewById(R.id.top_p_label);
+
+        TextView topKLabel =
+                view.findViewById(R.id.top_k_label);
+
+        SeekBar maxSeekBar =
+                view.findViewById(R.id.max_seekbar);
+
+        SeekBar temperatureSeekBar =
+                view.findViewById(R.id.temp_seekbar);
+
+        SeekBar topPSeekBar =
+                view.findViewById(R.id.top_p_seekbar);
+
+        SeekBar topKSeekBar =
+                view.findViewById(R.id.top_k_seekbar);
+
+        /*
+         * Updates the SeekBars and labels from the selected model.
+         */
+        AdapterView.OnItemSelectedListener modelListener =
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            AdapterView<?> parent,
+                            View itemView,
+                            int position,
+                            long id) {
+
+                        AIModel selectedModel =
+                                models.get(position);
+
+                        viewModel.setSelectedModel(
+                                selectedModel
+                        );
+
+                        /*
+                         * Convert the model's floating-point
+                         * values into integer SeekBar positions.
+                         */
+
+                        maxSeekBar.setProgress(
+                                selectedModel.getMaxTokens()
+                        );
+
+                        temperatureSeekBar.setProgress(
+                                (int) (selectedModel.getTemperature() * 100)
+                        );
+
+                        topPSeekBar.setProgress(
+                                (int) (selectedModel.getTopP() * 100)
+                        );
+
+                        topKSeekBar.setProgress(
+                                selectedModel.getTopK()
+                        );
+
+                        /*
+                         * Update the visible labels.
+                         */
+
+                        maxTokensLabel.setText(
+                                "Max Tokens: " +
+                                        selectedModel.getMaxTokens()
+                        );
+
+                        temperatureLabel.setText(
+                                String.format(
+                                        "Temperature: %.2f",
+                                        selectedModel.getTemperature()
+                                )
+                        );
+
+                        topPLabel.setText(
+                                String.format(
+                                        "Top P: %.2f",
+                                        selectedModel.getTopP()
+                                )
+                        );
+
+                        topKLabel.setText(
+                                "Top K: " +
+                                        selectedModel.getTopK()
+                        );
+                    }
+
+                    @Override
+                    public void onNothingSelected(
+                            AdapterView<?> parent) {
+
+                        viewModel.setSelectedModel(null);
+                    }
+                };
+
+        modelSpinner.setOnItemSelectedListener(
+                modelListener
+        );
+
+        temperatureSeekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar,
+                            int progress,
+                            boolean fromUser) {
+
+                        double temperature =
+                                progress / 100.0;
+
+                        temperatureLabel.setText(
+                                String.format(
+                                        "Temperature: %.2f",
+                                        temperature
+                                )
+                        );
+
+                        if (fromUser) {
+                            viewModel.setTemperature(temperature);
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+                }
+        );
+
+        topPSeekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar,
+                            int progress,
+                            boolean fromUser) {
+
+                        double topP =
+                                progress / 100.0;
+
+                        topPLabel.setText(
+                                String.format(
+                                        "Top P: %.2f",
+                                        topP
+                                )
+                        );
+
+                        if (fromUser) {
+                            viewModel.setTopP(progress / 100.0);
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+                }
+        );
+
+        topKSeekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar,
+                            int progress,
+                            boolean fromUser) {
+
+                        topKLabel.setText(
+                                "Top K: " + progress
+                        );
+
+                        if (fromUser) {
+                            viewModel.setTopK(progress);
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+                }
+        );
+
+        maxSeekBar.setOnSeekBarChangeListener(
+                new SeekBar.OnSeekBarChangeListener() {
+
+                    @Override
+                    public void onProgressChanged(
+                            SeekBar seekBar,
+                            int progress,
+                            boolean fromUser) {
+
+                        maxTokensLabel.setText(
+                                "Max Tokens: " + progress
+                        );
+
+                        if (fromUser) {
+                            viewModel.setMaxTokens(progress);
+                        }
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(
+                            SeekBar seekBar) {
+                    }
+                }
+        );
+
+        Button applyConfigButton =
+                view.findViewById(
+                        R.id.apply_config_button);
+
+        applyConfigButton.setOnClickListener(v -> {
+
+            applyConfigButton.setEnabled(false);
+
+            viewModel.applyModelConfiguration(
+                    new MainViewModel.ConfigurationCallback() {
+
+                        @Override
+                        public void onResult(String message) {
+
+                            requireActivity().runOnUiThread(() -> {
+
+                                applyConfigButton.setEnabled(true);
+
+                                android.widget.Toast.makeText(
+                                        requireContext(),
+                                        "Configuration applied",
+                                        android.widget.Toast.LENGTH_SHORT
+                                ).show();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String error) {
+
+                            requireActivity().runOnUiThread(() -> {
+
+                                applyConfigButton.setEnabled(true);
+
+                                android.widget.Toast.makeText(
+                                        requireContext(),
+                                        "Configuration error: " + error,
+                                        android.widget.Toast.LENGTH_LONG
+                                ).show();
+                            });
+                        }
+                    }
+            );
+        });
 
         Button dynamoButton =
                 view.findViewById(R.id.dynamo_button);

@@ -99,6 +99,18 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<List<DynamoResponse>> dynamos =
             new MutableLiveData<>(new ArrayList<>());
 
+    private final MutableLiveData<Integer> maxTokens =
+            new MutableLiveData<>(100);
+
+    private final MutableLiveData<Double> temperature =
+            new MutableLiveData<>(0.7);
+
+    private final MutableLiveData<Double> topP =
+            new MutableLiveData<>(0.9);
+
+    private final MutableLiveData<Integer> topK =
+            new MutableLiveData<>(10);
+
     /*
      * Repository responsible for communicating with the AI/backend layer
      *
@@ -118,8 +130,137 @@ public class MainViewModel extends AndroidViewModel {
         loadDynamos();
     }
 
+    public LiveData<Integer> getMaxTokens() {
+        return maxTokens;
+    }
+
+    public LiveData<Double> getTemperature() {
+        return temperature;
+    }
+
+    public LiveData<Double> getTopP() {
+        return topP;
+    }
+
+    public LiveData<Integer> getTopK() {
+        return topK;
+    }
+
+    public void setMaxTokens(int value) {
+        maxTokens.setValue(value);
+    }
+
+    public void setTemperature(double value) {
+        temperature.setValue(value);
+    }
+
+    public void setTopP(double value) {
+        topP.setValue(value);
+    }
+
+    public void setTopK(int value) {
+        topK.setValue(value);
+    }
+
+
+    public void loadModelConfiguration(AIModel model) {
+
+        if (model == null) {
+            return;
+        }
+
+        maxTokens.setValue(model.getMaxTokens());
+        temperature.setValue(model.getTemperature());
+        topP.setValue(model.getTopP());
+        topK.setValue(model.getTopK());
+    }
+
+
+    public LiveData<AIModel> getSelectedModel() {
+        return selectedModel;
+    }
     public LiveData<List<DynamoResponse>> getDynamos() {
         return dynamos;
+    }
+
+    public void setSelectedModel(AIModel model) {
+        selectedModel.setValue(model);
+
+        if (model != null) {
+
+            Log.d("LiveWire", "SELECTED MODEL SET: " + model.getId());
+
+            loadModelConfiguration(model);
+        }
+    }
+
+    public interface ConfigurationCallback {
+
+        void onResult(String message);
+
+        void onError(String error);
+    }
+
+    public void applyModelConfiguration(
+            ConfigurationCallback callback) {
+
+        AIModel model =
+                selectedModel.getValue();
+
+        if (model == null) {
+
+            callback.onError(
+                    "No model selected."
+            );
+
+            return;
+        }
+
+        Integer max =
+                maxTokens.getValue();
+
+        Double temp =
+                temperature.getValue();
+
+        Double p =
+                topP.getValue();
+
+        Integer k =
+                topK.getValue();
+
+        if (max == null ||
+                temp == null ||
+                p == null ||
+                k == null) {
+
+            callback.onError(
+                    "Model configuration is incomplete."
+            );
+
+            return;
+        }
+
+        repository.updateModelConfiguration(
+                model.getId(),
+                max,
+                temp,
+                p,
+                k,
+                new MainRepository.ConfigurationRepositoryCallback() {
+
+                    @Override
+                    public void onResult(String message) {
+
+                        callback.onResult(message);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+
+                        callback.onError(error);
+                    }
+                }
+        );
     }
 
     /**
@@ -340,16 +481,6 @@ public class MainViewModel extends AndroidViewModel {
         });
     }
 
-    public void setSelectedModel(AIModel model) {
-        selectedModel.setValue(model);
-
-        Log.d("LiveWire", "SELECTED MODEL SET: " + model.getId());
-    }
-
-
-    public LiveData<AIModel> getSelectedModel() {
-        return selectedModel;
-    }
     /**
      * Retrieves diagnostic information
 
