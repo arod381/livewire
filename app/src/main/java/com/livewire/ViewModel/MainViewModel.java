@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.livewire.Model.AIModel;
 import com.livewire.Model.ChatMessage;
+import com.livewire.Model.ConversationSnapshot;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
@@ -84,6 +85,8 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<List<ChatMessage>> conversation =
             new MutableLiveData<>(new ArrayList<>());
 
+    private final MutableLiveData<ConversationSnapshot> conversationSnapshot =
+            new MutableLiveData<>();
     /*
      * Stores the most recently retrieved diagnostic report
      */
@@ -263,6 +266,21 @@ public class MainViewModel extends AndroidViewModel {
         );
     }
 
+    /*
+     * Create a snapshot of the current conversation
+     *
+     * This creates an independent copy rather than keeping a
+     * reference to the mutable list
+     *
+     * This snapshot is not used later in the method
+     * so it could potentially be removed unless it is intended
+     * for future asynchronous/state handling
+     */
+
+    public LiveData<ConversationSnapshot> getConversationSnapshot() {
+        return conversationSnapshot;
+    }
+
     /**
      * Sends a user prompt to the AI
 
@@ -387,6 +405,17 @@ public class MainViewModel extends AndroidViewModel {
                         " | MESSAGES SENT: " + aiContext.size()
         );
 
+        for (ChatMessage message : aiContext) {
+
+            Log.d(
+                    "LiveWire",
+                    "CONTEXT MESSAGE: " +
+                            message.getSender() +
+                            " -> " +
+                            message.getMessage()
+            );
+        }
+
         /*
          * Create a snapshot of the current conversation
          *
@@ -397,9 +426,25 @@ public class MainViewModel extends AndroidViewModel {
          * so it could potentially be removed unless it is intended
          * for future asynchronous/state handling
          */
-        List<ChatMessage> conversationSnapshot =
-                new ArrayList<>(messages);
+        ConversationSnapshot snapshot =
+                new ConversationSnapshot(
+                        model.getId(),
+                        limit,
+                        aiContext
+                );
 
+        conversationSnapshot.setValue(snapshot);
+
+        Log.d(
+                "LiveWire",
+                "SNAPSHOT CREATED: model=" +
+                        snapshot.getModelId() +
+                        " | context=" +
+                        snapshot.getContextLimit() +
+                        " | messages=" +
+                        snapshot.getMessageCount()
+        );
+        
         /*
          * Send the selected AI context to the repository
          *
