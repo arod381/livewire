@@ -307,9 +307,7 @@ public class MainViewModel extends AndroidViewModel {
                         : new ArrayList<>(existing);
 
         // Add the user's new message to the conversation
-        messages.add(
-                new ChatMessage(prompt, ChatMessage.Sender.USER)
-        );
+        messages.add(new ChatMessage(prompt, ChatMessage.Sender.USER));
 
         // Publish the updated conversation to observers
         conversation.setValue(messages);
@@ -382,6 +380,12 @@ public class MainViewModel extends AndroidViewModel {
                     )
             );
         }
+
+        Log.d(
+                "LiveWire",
+                "CONTEXT LIMIT: " + limit +
+                        " | MESSAGES SENT: " + aiContext.size()
+        );
 
         /*
          * Create a snapshot of the current conversation

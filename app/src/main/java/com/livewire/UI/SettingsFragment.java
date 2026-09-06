@@ -169,29 +169,15 @@ public class SettingsFragment extends Fragment {
                          * Update the visible labels.
                          */
 
-                        maxTokensLabel.setText(
-                                "Max Tokens: " +
-                                        selectedModel.getMaxTokens()
-                        );
+                        maxTokensLabel.setText("Max Tokens: " + selectedModel.getMaxTokens());
 
                         temperatureLabel.setText(
-                                String.format(
-                                        "Temperature: %.2f",
-                                        selectedModel.getTemperature()
-                                )
-                        );
+                                String.format("Temperature: %.2f", selectedModel.getTemperature()));
 
                         topPLabel.setText(
-                                String.format(
-                                        "Top P: %.2f",
-                                        selectedModel.getTopP()
-                                )
-                        );
+                                String.format("Top P: %.2f", selectedModel.getTopP()));
 
-                        topKLabel.setText(
-                                "Top K: " +
-                                        selectedModel.getTopK()
-                        );
+                        topKLabel.setText("Top K: " + selectedModel.getTopK());
                     }
 
                     @Override
@@ -219,11 +205,7 @@ public class SettingsFragment extends Fragment {
                                 progress / 100.0;
 
                         temperatureLabel.setText(
-                                String.format(
-                                        "Temperature: %.2f",
-                                        temperature
-                                )
-                        );
+                                String.format("Temperature: %.2f", temperature));
 
                         if (fromUser) {
                             viewModel.setTemperature(temperature);
@@ -231,13 +213,11 @@ public class SettingsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStartTrackingTouch(SeekBar seekBar) {
                     }
 
                     @Override
-                    public void onStopTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStopTrackingTouch(SeekBar seekBar) {
                     }
                 }
         );
@@ -246,19 +226,13 @@ public class SettingsFragment extends Fragment {
                 new SeekBar.OnSeekBarChangeListener() {
 
                     @Override
-                    public void onProgressChanged(
-                            SeekBar seekBar,
-                            int progress,
-                            boolean fromUser) {
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                         double topP =
                                 progress / 100.0;
 
                         topPLabel.setText(
-                                String.format(
-                                        "Top P: %.2f",
-                                        topP
-                                )
+                                String.format("Top P: %.2f", topP)
                         );
 
                         if (fromUser) {
@@ -287,9 +261,7 @@ public class SettingsFragment extends Fragment {
                             int progress,
                             boolean fromUser) {
 
-                        topKLabel.setText(
-                                "Top K: " + progress
-                        );
+                        topKLabel.setText("Top K: " + progress);
 
                         if (fromUser) {
                             viewModel.setTopK(progress);
@@ -297,13 +269,11 @@ public class SettingsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStartTrackingTouch(SeekBar seekBar) {
                     }
 
                     @Override
-                    public void onStopTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStopTrackingTouch(SeekBar seekBar) {
                     }
                 }
         );
@@ -312,14 +282,9 @@ public class SettingsFragment extends Fragment {
                 new SeekBar.OnSeekBarChangeListener() {
 
                     @Override
-                    public void onProgressChanged(
-                            SeekBar seekBar,
-                            int progress,
-                            boolean fromUser) {
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                        maxTokensLabel.setText(
-                                "Max Tokens: " + progress
-                        );
+                        maxTokensLabel.setText("Max Tokens: " + progress);
 
                         if (fromUser) {
                             viewModel.setMaxTokens(progress);
@@ -327,27 +292,23 @@ public class SettingsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onStartTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStartTrackingTouch(SeekBar seekBar) {
                     }
 
                     @Override
-                    public void onStopTrackingTouch(
-                            SeekBar seekBar) {
+                    public void onStopTrackingTouch(SeekBar seekBar) {
                     }
                 }
         );
 
         Button applyConfigButton =
-                view.findViewById(
-                        R.id.apply_config_button);
+                view.findViewById(R.id.apply_config_button);
 
         applyConfigButton.setOnClickListener(v -> {
 
             applyConfigButton.setEnabled(false);
 
-            viewModel.applyModelConfiguration(
-                    new MainViewModel.ConfigurationCallback() {
+            viewModel.applyModelConfiguration(new MainViewModel.ConfigurationCallback() {
 
                         @Override
                         public void onResult(String message) {
@@ -412,5 +373,61 @@ public class SettingsFragment extends Fragment {
 
             startActivity(intent);
         });
+
+        Spinner contextSpinner =
+                view.findViewById(R.id.context_spinner);
+
+        contextSpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id) {
+
+                        int selectedLimit;
+
+                        switch (position) {
+
+                            case 0:
+                                // Context OFF
+                                selectedLimit = 0;
+                                break;
+
+                            case 1:
+                                // Recent 4 messages
+                                selectedLimit = 4;
+                                break;
+
+                            case 2:
+                                // Recent 10 messages
+                                selectedLimit = 10;
+                                break;
+
+                            case 3:
+                                // Full conversation
+                                selectedLimit = -1;
+                                break;
+
+                            default:
+                                selectedLimit = 10;
+                                break;
+                        }
+
+                        viewModel.setContextLimit(selectedLimit);
+
+                    }
+
+                    @Override
+                    public void onNothingSelected(
+                            AdapterView<?> parent) {
+
+                        viewModel.setContextLimit(10);
+                    }
+                }
+        );
+
     }
 }
