@@ -35,23 +35,32 @@ public class DiagnosticAnalyzer {
 
                 successful++;
 
+            } else if ("NETWORK_ERROR".equals(type)) {
+
+                failed++;
+                networkErrors++;
+
+            } else if ("HTTP_ERROR".equals(type)) {
+
+                failed++;
+                httpErrors++;
+
+            } else if ("RESPONSE_PARSE_ERROR".equals(type)) {
+
+                failed++;
+                parseErrors++;
+            }
+
+            /*
+             * AI_REQUEST_COMPLETED is a performance event.
+             * It does not count as success or failure.
+             */
+            if ("AI_REQUEST_COMPLETED".equals(type)) {
+
                 totalResponseTime += duration;
 
                 if (duration > slowestResponse) {
                     slowestResponse = duration;
-                }
-            } else {
-
-                failed++;
-
-                if ("NETWORK_ERROR".equals(type)) {
-                    networkErrors++;
-                } else if ("HTTP_ERROR".equals(type)) {
-                    httpErrors++;
-                } else if (
-                        "RESPONSE_PARSE_ERROR".equals(type)) {
-
-                    parseErrors++;
                 }
             }
         }

@@ -444,12 +444,14 @@ public class MainViewModel extends AndroidViewModel {
                         " | messages=" +
                         snapshot.getMessageCount()
         );
-        
+
         /*
          * Send the selected AI context to the repository
          *
          * The repository handles communication with AIService
          */
+        long requestStartTime = System.currentTimeMillis();
+
         repository.submitPrompt(
                 aiContext,
                 model,
@@ -466,6 +468,18 @@ public class MainViewModel extends AndroidViewModel {
                         "LiveWire",
                         "AI RESPONSE: " + result
                 );
+
+                long requestDurationMs =
+                        System.currentTimeMillis() - requestStartTime;
+
+                DiagnosticEventLogger.log(
+                        "AI_REQUEST_COMPLETED",
+                        "model=" + snapshot.getModelId() +
+                                " | context=" + snapshot.getContextLimit() +
+                                " | messages=" + snapshot.getMessageCount(),
+                        requestDurationMs
+                );
+
 
                 /*
                  * Retrieve the latest conversation
