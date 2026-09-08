@@ -214,8 +214,83 @@ Parse Errors: {request.parse_errors}
 Average Response Time: {request.average_response_ms} ms
 Slowest Response Time: {request.slowest_response_ms} ms
 
-Context Performance
+CONTEXT PERFORMANCE
+
+The context_performance data contains measurements grouped by context limit.
+
+Each entry contains:
+- context_limit: number of previous messages allowed in the AI request
+- request_count: number of requests measured at that context limit
+- average_response_ms: average response time for that context limit
+
+Use this data to determine whether increasing conversation context appears to affect response performance.
+
+Compare the average response times between context limits when enough requests are available.
+
+Do not treat a context limit as meaningfully slower or faster when it has very few samples.
+
+Look for:
+1. Whether response time increases as context increases.
+2. Whether a particular context limit appears unusually slow.
+3. Whether the performance difference is large enough to matter.
+4. Whether the available sample size is sufficient to support a recommendation.
+5. Whether the data suggests that reducing context could improve performance without unnecessarily reducing conversational context.
+
+Only recommend changing the context limit when the measured data provides reasonable evidence for the change.
+
+PERFORMANCE ANALYSIS REQUIREMENTS
+
+Structure your analysis into these sections:
+
+FINDINGS
+- State the important measured performance patterns.
+- Reference context limits and response times when relevant.
+- Distinguish measured facts from interpretation.
+
+ASSESSMENT
+- Explain whether the observed performance appears healthy, degraded, or inconclusive.
+- Consider request counts and sample sizes.
+- Do not overstate conclusions from limited data.
+
+RECOMMENDATIONS
+- Recommend configuration changes only when supported by the measurements.
+- If the evidence is insufficient, explicitly say that more measurements are needed.
+- When recommending a context limit, explain the performance tradeoff between response speed and conversational context.
+- Also consider temperature, top_p, top_k, and max_tokens when the available data supports discussing them.
+
+CONTEXT PERFORMANCE DATA:
 {request.context_performance}
+
+CURRENT CONFIGURATION ASSESSMENT
+
+Evaluate the measured performance against the current model configuration.
+
+The current configuration is:
+
+Temperature: {request.temperature}
+Top P: {request.top_p}
+Top K: {request.top_k}
+Max Tokens: {request.max_tokens}
+
+When evaluating the configuration:
+
+1. Identify whether any current setting appears associated with poor performance.
+2. Do not recommend changing a setting simply because another value might theoretically be faster.
+3. Base recommendations on the supplied measurements whenever possible.
+4. Distinguish settings that affect response quality from settings that primarily affect generation cost or latency.
+5. Consider max_tokens when evaluating response duration.
+6. Consider context size when evaluating response duration.
+7. Do not claim that temperature, top_p, or top_k caused a performance difference unless measurements specifically support that conclusion.
+8. If there is not enough experimental data to evaluate a setting, explicitly state that the setting cannot yet be evaluated.
+
+End the analysis with:
+
+OVERALL RECOMMENDATION
+
+Provide a concise recommendation for the current configuration:
+- KEEP if the available evidence supports the current configuration.
+- ADJUST if the evidence supports a specific change.
+- COLLECT MORE DATA if there is insufficient evidence.
 
 EVENT HISTORY
 {request.events}

@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:textIsSelectable="true"
     tools:context="com.livewire.UI.MainActivity">
 
     <androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@
         android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
+        android:textIsSelectable="true"
         app:layout_constraintBottom_toTopOf="@id/edit_text_id"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -67,6 +69,7 @@
         android:layout_width="146dp"
         android:layout_height="728dp"
         android:layout_marginTop="4dp"
+        android:textIsSelectable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/chat_recycler_view"
         app:layout_constraintHorizontal_bias="0.0"

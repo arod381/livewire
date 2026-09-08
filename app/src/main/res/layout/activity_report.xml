@@ -16,6 +16,7 @@
             android:id="@+id/diagnostics_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textIsSelectable="true"
             android:padding="16dp"
             android:textSize="16sp" />
 
@@ -23,6 +24,7 @@
             android:id="@+id/analysis_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textIsSelectable="true"
             android:layout_marginTop="24dp"
             android:text="Model Analysis"
             android:textSize="16sp"
