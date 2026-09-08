@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.livewire.Model.AIModel;
 import com.livewire.Model.ChatMessage;
+import com.livewire.Model.ContextPerformance;
 import com.livewire.Model.ConversationSnapshot;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
@@ -603,6 +604,11 @@ public class MainViewModel extends AndroidViewModel {
 
                         // Attach calculated statistics to the report
                         report.setStatistics(statistics);
+
+                        List<ContextPerformance> performance =
+                                DiagnosticAnalyzer.analyzeContextPerformance(events);
+
+                        report.setPerformance(performance);
 
                         /*
                          * Publish the completed report

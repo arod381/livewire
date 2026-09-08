@@ -1,5 +1,7 @@
 package com.livewire.Model;
 
+import android.content.Context;
+
 import java.util.List;
 
 public class DiagnosticReport {
@@ -16,6 +18,8 @@ public class DiagnosticReport {
     private List<DiagnosticEvent> events;
 
     private DiagnosticStatistics statistics;
+
+    private List<ContextPerformance> performance;
 
     public String getServerStatus() {
         return serverStatus;
@@ -97,4 +101,8 @@ public class DiagnosticReport {
     public void setStatistics(DiagnosticStatistics statistics) {
         this.statistics = statistics;
     }
+
+    public List<ContextPerformance> getPerformance() { return performance; }
+
+    public void setPerformance(List<ContextPerformance> performance) { this.performance = performance; }
 }

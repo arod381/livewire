@@ -107,12 +107,10 @@ def update_model_config(request: ModelConfigRequest):
         "config": MODEL_CONFIGS[request.model]
     }
 
-class ModelConfigRequest(BaseModel):
-    model: str
-    max_tokens: int
-    temperature: float
-    top_p: float
-    top_k: int
+class ContextPerformance(BaseModel):
+    context_limit: int
+    request_count: int
+    average_response_ms: float
 
 # Defines the expected structure of diagnostic data sent to /analyze endpoint
 # FastAPI automatically validates incoming JSON against this model
@@ -146,6 +144,9 @@ class DiagnosticAnalysisRequest(BaseModel):
     # Performance measurements
     average_response_ms: float
     slowest_response_ms: float
+
+    # Context performance
+    context_performance: list[ContextPerformance]
 
     # Historical application events
     # Each dictionary represents an event record
@@ -212,6 +213,9 @@ HTTP Errors: {request.http_errors}
 Parse Errors: {request.parse_errors}
 Average Response Time: {request.average_response_ms} ms
 Slowest Response Time: {request.slowest_response_ms} ms
+
+Context Performance
+{request.context_performance}
 
 EVENT HISTORY
 {request.events}

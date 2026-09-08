@@ -16,11 +16,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.livewire.Model.AIModel;
 import com.livewire.Model.ApplicationDiagnostics;
+import com.livewire.Model.ContextPerformance;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticStatistics;
 import com.livewire.Model.ModelCatalog;
 import com.livewire.R;
 import com.livewire.ViewModel.MainViewModel;
+
+import java.util.List;
 
 public class ReportActivity extends AppCompatActivity {
 
@@ -147,19 +150,38 @@ public class ReportActivity extends AppCompatActivity {
 
                 DiagnosticStatistics statistics = diagnostics.getStatistics();
 
+                List<ContextPerformance> performance = diagnostics.getPerformance();
+
                 text += "\n\nPERFORMANCE\n";
 
                 if (statistics != null) {
 
                     text +=
-                        "Total Requests: " + statistics.getTotalRequests() + "\n" +
-                        "Successful: " + statistics.getSuccessfulRequests() + "\n" +
-                        "Failed: " + statistics.getFailedRequests() + "\n" +
-                        "Network Errors: " + statistics.getNetworkErrors() + "\n" +
-                        "HTTP Errors: " + statistics.getHttpErrors() + "\n" +
-                        "Parse Errors: " + statistics.getParseErrors() + "\n" +
-                        "Average Response: " + statistics.getAverageResponseTimeMs() + " ms\n" +
-                        "Slowest Response: " + statistics.getSlowestResponseMs() + " ms";
+                            "Total Requests: " + statistics.getTotalRequests() + "\n" +
+                                    "Successful: " + statistics.getSuccessfulRequests() + "\n" +
+                                    "Failed: " + statistics.getFailedRequests() + "\n" +
+                                    "Network Errors: " + statistics.getNetworkErrors() + "\n" +
+                                    "HTTP Errors: " + statistics.getHttpErrors() + "\n" +
+                                    "Parse Errors: " + statistics.getParseErrors() + "\n" +
+                                    "Average Response: " + statistics.getAverageResponseTimeMs() + " ms\n" +
+                                    "Slowest Response: " + statistics.getSlowestResponseMs() + " ms";
+                }
+
+                text += "\n\nCONTEXT PERFORMANCE\n";
+
+                if (performance == null || performance.isEmpty()) {
+
+                    text += "No context performance data recorded.";
+
+                } else {
+
+                    for (ContextPerformance item : performance) {
+
+                        text +=
+                                "Context Limit: " + item.getContextLimit() + "\n" +
+                                        "Request Count: " + item.getRequestCount() + "\n" +
+                                        "Average Response: " + item.getAverageResponseMs() + " ms\n\n";
+                    }
                 }
             }
 

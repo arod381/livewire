@@ -8,6 +8,7 @@ import com.livewire.Model.AIModel;
 import com.livewire.Model.ChatMessage;
 
 // Model class representing individual diagnostic events
+import com.livewire.Model.ContextPerformance;
 import com.livewire.Model.DiagnosticEvent;
 
 // Model class containing complete diagnostic information about the AI service
@@ -343,6 +344,9 @@ public class AIService {
             DiagnosticStatistics statistics =
                     report.getStatistics();
 
+            List<ContextPerformance> performance =
+                    report.getPerformance();
+
             if (statistics != null) {
 
                 json.put(
@@ -383,6 +387,42 @@ public class AIService {
                 json.put(
                         "slowest_response_ms",
                         statistics.getSlowestResponseMs()
+                );
+            }
+
+            if (performance != null) {
+
+                JSONArray performanceJson =
+                        new JSONArray();
+
+                for (ContextPerformance item : performance) {
+
+                    JSONObject performanceItem =
+                            new JSONObject();
+
+                    performanceItem.put(
+                            "context_limit",
+                            item.getContextLimit()
+                    );
+
+                    performanceItem.put(
+                            "request_count",
+                            item.getRequestCount()
+                    );
+
+                    performanceItem.put(
+                            "average_response_ms",
+                            item.getAverageResponseMs()
+                    );
+
+                    performanceJson.put(
+                            performanceItem
+                    );
+                }
+
+                json.put(
+                        "context_performance",
+                        performanceJson
                 );
             }
 
