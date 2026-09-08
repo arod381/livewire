@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="12dp"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textIsSelectable="true"/>
 
     <ImageButton
         android:id="@+id/dynamo_button"
