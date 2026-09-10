@@ -6,6 +6,7 @@ import androidx.room.Room;
 
 import com.livewire.Database.Powerplant;
 import com.livewire.Entity.DynamoResponse;
+import com.livewire.Entity.DiagnosticRequestRecord;
 
 // Diagnostic data models used by the repository
 import com.livewire.Model.AIModel;
@@ -151,6 +152,101 @@ public class MainRepository {
         });
     }
 
+    public void saveDiagnosticRequestRecord(
+            DiagnosticRequestRecord record,
+            DiagnosticRequestRecordRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .diagnosticRequestRecordDao()
+                        .insert(record);
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void getDiagnosticRequestRecord(
+            DiagnosticRequestRecordsRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                List<DiagnosticRequestRecord> records =
+                        powerplant
+                                .diagnosticRequestRecordDao()
+                                .getAll();
+
+                callback.onResult(records);
+
+            } catch (Exception e) {
+
+                callback.onError(e.getMessage());
+            }
+        });
+    }
+
+    public void deleteDiagnosticRequestRecord(
+            DiagnosticRequestRecord record,
+            DiagnosticRequestRecordRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .diagnosticRequestRecordDao()
+                        .delete(record);
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
+    public void deleteAllDiagnosticRequestRecords(
+            DiagnosticRequestRecordRepositoryCallback callback) {
+
+        databaseExecutor.execute(() -> {
+
+            try {
+
+                powerplant
+                        .diagnosticRequestRecordDao()
+                        .clearAll();
+
+                if (callback != null) {
+                    callback.onComplete();
+                }
+
+            } catch (Exception e) {
+
+                if (callback != null) {
+                    callback.onError(e.getMessage());
+                }
+            }
+        });
+    }
+
     public interface DynamoRepositoryCallback{
         void onComplete();
         void onError(String error);
@@ -158,6 +254,16 @@ public class MainRepository {
 
     public interface DynamosRepositoryCallback{
         void onResult(List<DynamoResponse> responses);
+        void onError(String error);
+    }
+
+    public interface DiagnosticRequestRecordRepositoryCallback{
+        void onComplete();
+        void onError(String error);
+    }
+
+    public interface DiagnosticRequestRecordsRepositoryCallback{
+        void onResult(List<DiagnosticRequestRecord> records);
         void onError(String error);
     }
     public MainRepository(Context context) {

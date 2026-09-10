@@ -105,4 +105,5 @@ public class DiagnosticReport {
     public List<ContextPerformance> getPerformance() { return performance; }
 
     public void setPerformance(List<ContextPerformance> performance) { this.performance = performance; }
+
 }

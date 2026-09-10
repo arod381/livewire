@@ -16,7 +16,9 @@ import com.livewire.Model.ConversationSnapshot;
 import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
+
 import com.livewire.Entity.DynamoResponse;
+import com.livewire.Entity.DiagnosticRequestRecord;
 
 import com.livewire.Service.DiagnosticAnalyzer;
 import com.livewire.Service.DiagnosticEventLogger;
@@ -429,6 +431,7 @@ public class MainViewModel extends AndroidViewModel {
          */
         ConversationSnapshot snapshot =
                 new ConversationSnapshot(
+                        System.currentTimeMillis(),
                         model.getId(),
                         limit,
                         aiContext
@@ -475,10 +478,46 @@ public class MainViewModel extends AndroidViewModel {
 
                 DiagnosticEventLogger.log(
                         "AI_REQUEST_COMPLETED",
-                        "model=" + snapshot.getModelId() +
+                        "Timestamp=" + snapshot.getTimestamp() +
+                                " | model=" + snapshot.getModelId() +
                                 " | context=" + snapshot.getContextLimit() +
                                 " | messages=" + snapshot.getMessageCount(),
                         requestDurationMs
+                );
+
+                DiagnosticRequestRecord record =
+                        new DiagnosticRequestRecord(
+                                snapshot.getTimestamp(),
+                                snapshot.getModelId(),
+                                snapshot.getContextLimit(),
+                                snapshot.getMessageCount(),
+                                temperature.getValue() != null ? temperature.getValue() : model.getTemperature(),
+                                topP.getValue() != null ? topP.getValue() : model.getTopP(),
+                                topK.getValue() != null ? topK.getValue() : model.getTopK(),
+                                maxTokens.getValue() != null ? maxTokens.getValue() : model.getMaxTokens(),
+                                requestDurationMs,
+                                true,
+                                null
+                        );
+                repository.saveDiagnosticRequestRecord(
+                        record,
+                        new MainRepository.DiagnosticRequestRecordRepositoryCallback() {
+                            @Override
+                            public void onComplete() {
+                                Log.d(
+                                        "LiveWire",
+                                        "DIAGNOSTIC REQUEST RECORD SAVED"
+                                );
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                Log.e(
+                                        "LiveWire",
+                                        "DIAGNOSTIC REQUEST RECORD SAVE ERROR: " + error
+                                );
+                            }
+                        }
                 );
 
 
