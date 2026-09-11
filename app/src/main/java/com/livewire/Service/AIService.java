@@ -302,6 +302,16 @@ public class AIService {
             JSONObject json = new JSONObject();
 
             json.put(
+                    "max_tokens",
+                    report.getMaxTokens()
+            );
+
+            json.put(
+                    "analysis_depth",
+                    "detailed"
+            );
+
+            json.put(
                     "model",
                     modelId
             );

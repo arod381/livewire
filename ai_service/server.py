@@ -124,6 +124,9 @@ class DiagnosticAnalysisRequest(BaseModel):
     # How long the monitored applications has been running
     uptime_seconds: float
 
+    # Are slower responses actually producing better AI responses
+    analysis_depth: str = "detailed"
+    
     # LLM configuration information
     model_name: str
     temperature: float
@@ -187,6 +190,20 @@ def analyze(request: DiagnosticAnalysisRequest):
 
     prompt = f"""
 You are analyzing the LiveWire application itself.
+
+Analysis depth: {request.analysis_depth}
+
+If analysis depth is "concise":
+- Focus only on the most important findings.
+- Keep explanations brief.
+- Avoid repeating information.
+- Keep recommendations short.
+
+If analysis depth is "detailed":
+- Provide thorough explanations of important findings.
+- Explain the evidence and reasoning behind recommendations.
+- Discuss relevant performance and configuration tradeoffs.
+- Do not add unsupported speculation.
 
 Review the following diagnostic information and identify
 actual problems, abnormal behavior, or potential concerns.
@@ -291,6 +308,33 @@ Provide a concise recommendation for the current configuration:
 - KEEP if the available evidence supports the current configuration.
 - ADJUST if the evidence supports a specific change.
 - COLLECT MORE DATA if there is insufficient evidence.
+
+NEXT EXPERIMENT
+
+If more data is needed, describe the single most useful next
+experiment. Otherwise state:
+"NO ADDITIONAL EXPERIMENT REQUIRED."
+
+Consider:
+
+1. Which context limits need more samples.
+2. Whether the current sample sizes are comparable.
+3. Whether a setting needs to be tested at multiple values.
+4. Whether the measured performance difference is large enough
+   to justify further investigation.
+5. Which single experiment would provide the most useful evidence.
+
+When recommending an experiment, specify:
+- The configuration or context value to test.
+- Approximately how many requests should be measured.
+- What metric should be compared.
+- What result would support changing the configuration.
+
+Do not recommend experiments that are unnecessary when the
+existing evidence is already sufficient.
+
+If the evidence is sufficient, state:
+"NO ADDITIONAL EXPERIMENT REQUIRED."
 
 EVENT HISTORY
 {request.events}
