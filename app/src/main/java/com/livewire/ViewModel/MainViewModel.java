@@ -117,6 +117,36 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<Integer> topK =
             new MutableLiveData<>(10);
 
+    private String classifyDiagnosticError(String error) {
+
+        if (error == null) {
+            return "UNKNOWN";
+        }
+
+        String message = error.toLowerCase();
+
+        if (message.contains("timeout")
+                || message.contains("network")
+                || message.contains("connection")
+                || message.contains("unable to resolve host")) {
+            return "NETWORK";
+        }
+
+        if (message.contains("http")
+                || message.contains("status code")
+                || message.contains("response code")) {
+            return "HTTP";
+        }
+
+        if (message.contains("json")
+                || message.contains("parse")
+                || message.contains("parsing")) {
+            return "PARSE";
+        }
+
+        return "UNKNOWN";
+    }
+
     /*
      * Repository responsible for communicating with the AI/backend layer
      *
@@ -467,14 +497,14 @@ public class MainViewModel extends AndroidViewModel {
             @Override
             public void onResult(String result) {
 
+                long requestDurationMs =
+                        System.currentTimeMillis() - requestStartTime;
+
                 // Log the response for debugging
                 android.util.Log.d(
                         "LiveWire",
                         "AI RESPONSE: " + result
                 );
-
-                long requestDurationMs =
-                        System.currentTimeMillis() - requestStartTime;
 
                 DiagnosticEventLogger.log(
                         "AI_REQUEST_COMPLETED",
@@ -554,13 +584,59 @@ public class MainViewModel extends AndroidViewModel {
             @Override
             public void onError(String error) {
 
-                // Retrieve the current conversation
-                List<ChatMessage> messages = conversation.getValue();
+                long requestDurationMs = System.currentTimeMillis() - requestStartTime;
 
-                // Make sure a list exists before adding the error
-                if (messages == null) {
-                    messages = new ArrayList<>();
-                }
+                // Retrieve the current conversation
+                List<ChatMessage> existing = conversation.getValue();
+
+                List<ChatMessage> messages =
+                        existing == null ? new ArrayList<>() : new ArrayList<>(existing);
+
+                DiagnosticRequestRecord record =
+                        new DiagnosticRequestRecord(
+                                snapshot.getTimestamp(),
+                                snapshot.getModelId(),
+                                snapshot.getContextLimit(),
+                                snapshot.getMessageCount(),
+                                temperature.getValue() != null
+                                        ? temperature.getValue()
+                                        : model.getTemperature(),
+                                topP.getValue() != null
+                                        ? topP.getValue()
+                                        : model.getTopP(),
+                                topK.getValue() != null
+                                        ? topK.getValue()
+                                        : model.getTopK(),
+                                maxTokens.getValue() != null
+                                        ? maxTokens.getValue()
+                                        : model.getMaxTokens(),
+                                requestDurationMs,
+                                false,
+                                classifyDiagnosticError(error)
+                        );
+
+                repository.saveDiagnosticRequestRecord(
+                        record,
+                        new MainRepository.DiagnosticRequestRecordRepositoryCallback() {
+
+                            @Override
+                            public void onComplete() {
+                                Log.d(
+                                        "LiveWire",
+                                        "DIAGNOSTIC FAILED REQUEST RECORD SAVED"
+                                );
+                            }
+
+                            @Override
+                            public void onError(String saveError) {
+                                Log.e(
+                                        "LiveWire",
+                                        "DIAGNOSTIC FAILED REQUEST RECORD SAVE ERROR: "
+                                                + saveError
+                                );
+                            }
+                        }
+                );
 
                 /*
                  * Display the error as an AI message

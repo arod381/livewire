@@ -1,6 +1,7 @@
 package com.livewire.Repository;
 
 import android.content.Context;
+import android.health.connect.datatypes.units.Power;
 
 import androidx.room.Room;
 
@@ -56,6 +57,18 @@ public class MainRepository {
 
     private final ExecutorService databaseExecutor =
             Executors.newSingleThreadExecutor();
+
+    public MainRepository(Context context) {
+
+        powerplant = Room.databaseBuilder(
+                context.getApplicationContext(),
+                Powerplant.class,
+                "livewire_powerplant"
+        )
+        .addMigrations(Powerplant.MIGRATION_1_2)
+        .build();
+    }
+
 
     public void saveDynamo(
             DynamoResponse response,
@@ -265,14 +278,6 @@ public class MainRepository {
     public interface DiagnosticRequestRecordsRepositoryCallback{
         void onResult(List<DiagnosticRequestRecord> records);
         void onError(String error);
-    }
-    public MainRepository(Context context) {
-
-        powerplant = Room.databaseBuilder(
-                context.getApplicationContext(),
-                Powerplant.class,
-                "livewire_powerplant"
-        ).build();
     }
 
     // Chat
