@@ -990,4 +990,11 @@ public class MainViewModel extends AndroidViewModel {
         return conversation;
     }
 
+    // calls repository.close()
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        repository.close();
+    }
+
 }

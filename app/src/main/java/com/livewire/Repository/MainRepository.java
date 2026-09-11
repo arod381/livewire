@@ -488,4 +488,10 @@ public class MainRepository {
                 }
         );
     }
+
+    // shuts down databaseExecutor and closes Powerplant
+    public void close() {
+        databaseExecutor.shutdown();
+        powerplant.close();
+    }
 }
