@@ -28,7 +28,7 @@ public final class ModelCatalog {
         models.add(
                 new AIModel(
                         "gemma:2b",
-                        "Gemma2 2B",
+                        "Gemma 2B",
                         "ollama",
                         500,
                         0.8,

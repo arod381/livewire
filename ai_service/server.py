@@ -67,7 +67,7 @@ MODEL_CONFIGS = {
     },
 
     "gemma:2b": {
-        "name": "Gemma2 2B",
+        "name": "Gemma 2B",
         "backend": "ollama",
         "path": "google/gemma-2-2b-it",
         "temperature": 0.8, # Controls randomness of generated responses
