@@ -969,6 +969,10 @@ public class MainViewModel extends AndroidViewModel {
         contextLimit.setValue(limit);
     }
 
+    public void setDiagnosticAnalysisDepth(String depth) {
+        repository.setDiagnosticAnalysisDepth(depth);
+    }
+    
     /**
      * Provides the most recently submitted prompt
      */

@@ -53,6 +53,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class AIService {
 
+    private String diagnosticAnalysisDepth = "detailed";
+
     /**
      *  OkHttp client used for all communication with the AI backend
      *  The timeout values are extended because AI model responses may take
@@ -103,6 +105,13 @@ public class AIService {
          * @param error Description of failure
          */
         void onError(String error);
+    }
+
+    public void setDiagnosticAnalysisDepth(String depth) {
+
+        if("concise".equals(depth) || "detailed".equals(depth)) {
+            diagnosticAnalysisDepth = depth;
+        }
     }
 
     public void getDiagnostics(AIModel model, DiagnosticsCallback callback) {
@@ -308,7 +317,7 @@ public class AIService {
 
             json.put(
                     "analysis_depth",
-                    "detailed"
+                    diagnosticAnalysisDepth
             );
 
             json.put(

@@ -374,8 +374,7 @@ public class SettingsFragment extends Fragment {
             startActivity(intent);
         });
 
-        Spinner contextSpinner =
-                view.findViewById(R.id.context_spinner);
+        Spinner contextSpinner = view.findViewById(R.id.context_spinner);
 
         contextSpinner.setOnItemSelectedListener(
                 new AdapterView.OnItemSelectedListener() {
@@ -429,5 +428,55 @@ public class SettingsFragment extends Fragment {
                 }
         );
 
+        /*
+        // Template for drop-down logic
+
+        Spinner depthSpinner = view.findViewById(R.id.depth_spinner);
+
+        depthSpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+
+                    @Override
+                    public void onItemSelected(
+                            AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id) {
+
+                        String selectedDepth;
+
+                        switch (position) {
+
+                            case 0:
+                                // Concise
+                                selectedDepth = "concise";
+                                break;
+
+                            case 1:
+                                // Detailed
+                                selectedDepth = "detailed";
+                                break;
+
+                            default:
+                                selectedDepth = "detailed";
+                                break;
+                        }
+
+                        viewModel.setDiagnosticAnalysisDepth(
+                                selectedDepth
+                        );
+                    }
+
+                    @Override
+                    public void onNothingSelected(
+                            AdapterView<?> parent) {
+
+                        viewModel.setDiagnosticAnalysisDepth(
+                                "detailed"
+                        );
+                    }
+                }
+        );
+        */
     }
 }

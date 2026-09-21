@@ -29,6 +29,16 @@ app = FastAPI()
 # Store the timestamp when the application starts
 SERVER_START_TIME = time.time()
 
+# Model Instructions for response.
+CHAT_SYSTEM_PROMPT = """
+Provide a complete, useful response to the user's request.
+Use as many tokens as necessary to fully answer the request,
+up to the configured maximum response length.
+Do not intentionally shorten the response merely to save tokens,
+and do not add unnecessary information just to use the available
+response length.
+""".strip()
+
 # URL for the local Ollama chat API endpoint
 # Ollama must be running locally for the AI requests to succeed
 OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
@@ -469,8 +479,11 @@ def chat(request: ChatRequest):
 def chat_with_phi4mini_base(request: ChatRequest, config: dict):
 
     messages = [
-        {"role": message.role, "content": message.content}
+        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+        *[
+            {"role": message.role, "content": message.content}
         for message in request.messages
+        ]
     ]
 
     prompt = phi4mini_tokenizer.apply_chat_template(
@@ -518,10 +531,16 @@ def chat_with_ollama(request: ChatRequest, config: dict):
             # Ollama-compatible dictionaries
             "messages": [
                 {
-                    "role": message.role,
-                    "content": message.content
-                }
-                for message in request.messages
+                    "role": "system",
+                    "content": CHAT_SYSTEM_PROMPT
+                ),
+                *[
+                    {
+                        "role": message.role,
+                        "content": message.content
+                    }
+                    for message in request.messages
+                ]
             ],
 
             # Request a complete response
@@ -552,8 +571,11 @@ def chat_with_ollama(request: ChatRequest, config: dict):
 
 def chat_with_llama_cpp(request: ChatRequest, config: dict):
     messages = [
-        {"role": message.role, "content": message.content}
+        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+        *[
+            {"role": message.role, "content": message.content}
         for message in request.messages
+        ]
     ]
 
     output = student_model.create_chat_completion(

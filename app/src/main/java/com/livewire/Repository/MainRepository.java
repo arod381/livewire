@@ -393,6 +393,10 @@ public class MainRepository {
         void onError(String error);
     }
 
+    public void setDiagnosticAnalysisDepth(String depth) {
+        aiservice.setDiagnosticAnalysisDepth(depth);
+    }
+
     /**
      * Retrieves the current diagnostic information
 
