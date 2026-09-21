@@ -29,7 +29,7 @@ app = FastAPI()
 # Store the timestamp when the application starts
 SERVER_START_TIME = time.time()
 
-# Model Instructions for response.
+# Model instructions for response
 CHAT_SYSTEM_PROMPT = """
 Provide a complete, useful response to the user's request.
 Use as many tokens as necessary to fully answer the request,
@@ -48,17 +48,32 @@ PHI4MINI_MODEL_PATH = "microsoft/Phi-4-mini-instruct"
 phi4mini_tokenizer = AutoTokenizer.from_pretrained(PHI4MINI_MODEL_PATH)
 phi4mini_model = AutoModelForCausalLM.from_pretrained(PHI4MINI_MODEL_PATH)
 
+GEMMA_MODEL_PATH = "google/gemma-2-2b-it"
+
+gemma_tokenizer = AutoTokenizer.from_pretrained(GEMMA_MODEL_PATH)
+gemma_model = AutoModelForCausalLM.from_pretrained(GEMMA_MODEL_PATH)
+
 # Configuration information describing the active model settings
 MODEL_CONFIGS = {
 
     "phi4-mini": {
         "name": "Phi-4-mini 3.8B",
         "backend": "ollama",
-        "path": "microsoft/Phi-4-mini-instruct",
+        "path": "microsoft/Phi-4-mini-instruct", # HF repo ID, not a local file
         "temperature": 0.8, # Controls randomness of generated responses
         "top_p": 0.9,       # Controls nucleus sampling probability
         "top_k": 10,        # Limits token selection to the top K choices
-        "max_tokens": 350   # Max number of tokens generated per response
+        "max_tokens": 500   # Max number of tokens generated per response
+    },
+
+    "gemma:2b": {
+        "name": "Gemma2 2B",
+        "backend": "ollama",
+        "path": "google/gemma-2-2b-it",
+        "temperature": 0.8, # Controls randomness of generated responses
+        "top_p": 0.9,       # Controls nucleus sampling probability
+        "top_k": 10,        # Limits token selection to the top K choices
+        "max_tokens": 500   # Max number of tokens generated per response
     },
     
     "livewire1.0:0": {
@@ -68,7 +83,7 @@ MODEL_CONFIGS = {
         "temperature": 0.8, # Controls randomness of generated responses
         "top_p": 0.9,       # Controls nucleus sampling probability
         "top_k": 10,        # Limits token selection to the top K choices
-        "max_tokens": 350   # Max number of tokens generated per response
+        "max_tokens": 500   # Max number of tokens generated per response
     }
 
 }
@@ -395,7 +410,10 @@ available evidence supports the recommendation.
                     "content": prompt
                 }
             ],
-            "stream": False
+            "stream": False,
+            "options": {
+                "num_predict": request.max_tokens
+            }
         },
         timeout=360
     )
@@ -467,6 +485,9 @@ def chat(request: ChatRequest):
     elif request.backend == "phi4mini_base":
         return chat_with_phi4mini_base(request, config)
 
+    elif request.backend == "gemma_base":
+        return chat_with_gemma_base(request, config)
+
     else:
         raise HTTPException(
             status_code=400,
@@ -520,6 +541,50 @@ def chat_with_phi4mini_base(request: ChatRequest, config: dict):
         response=response.strip()
     )
 
+def chat_with_gemma_base(request: ChatRequest, config: dict):
+
+    messages = [
+        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
+        *[
+            {"role": message.role, "content": message.content}
+        for message in request.messages
+        ]
+    ]
+
+    prompt = gemma_tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+    inputs = gemma_tokenizer(
+        prompt,
+        return_tensors="pt"
+    )
+
+    with torch.no_grad():
+
+        outputs = gemma_model.generate(
+            **inputs,
+            max_new_tokens=config["max_tokens"],
+            do_sample=True,
+            temperature=config["temperature"],
+            top_p=config["top_p"],
+            top_k=config["top_k"],
+            pad_token_id=gemma_tokenizer.pad_token_id or gemma_tokenizer.eos_token_id,
+        )
+
+    generated_tokens = outputs[0][inputs["input_ids"].shape[1]:]
+
+    response = gemma_tokenizer.decode(
+        generated_tokens,
+        skip_special_tokens=True
+    )
+
+    return ChatResponse(
+        response=response.strip()
+    )
+
     # Send the conversation messages to the local model
 def chat_with_ollama(request: ChatRequest, config: dict):
     ollama_response = requests.post(
@@ -531,16 +596,10 @@ def chat_with_ollama(request: ChatRequest, config: dict):
             # Ollama-compatible dictionaries
             "messages": [
                 {
-                    "role": "system",
-                    "content": CHAT_SYSTEM_PROMPT
-                ),
-                *[
-                    {
-                        "role": message.role,
-                        "content": message.content
-                    }
-                    for message in request.messages
-                ]
+                    "role": message.role,
+                    "content": message.content
+                }
+                for message in request.messages
             ],
 
             # Request a complete response
@@ -576,6 +635,7 @@ def chat_with_llama_cpp(request: ChatRequest, config: dict):
             {"role": message.role, "content": message.content}
         for message in request.messages
         ]
+        
     ]
 
     output = student_model.create_chat_completion(

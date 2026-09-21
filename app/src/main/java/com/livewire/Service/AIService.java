@@ -304,6 +304,7 @@ public class AIService {
     public void analyzeDiagnostics(
             DiagnosticReport report,
             String modelId,
+            
             AnalysisCallback callback) {
 
         try {

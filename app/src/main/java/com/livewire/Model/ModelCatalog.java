@@ -17,7 +17,20 @@ public final class ModelCatalog {
                         "phi4-mini",
                         "Phi 4 3.8B",
                         "ollama",
-                        350,
+                        500,
+                        0.8,
+                        0.9,
+                        10
+
+                )
+        );
+
+        models.add(
+                new AIModel(
+                        "gemma:2b",
+                        "Gemma2 2B",
+                        "ollama",
+                        500,
                         0.8,
                         0.9,
                         10
@@ -30,7 +43,7 @@ public final class ModelCatalog {
                         "livewire1.0:0",
                         "Livewire 1.0 1A",
                         "transformers",
-                        350,
+                        500,
                         0.8,
                         0.9,
                         10
