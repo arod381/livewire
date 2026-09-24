@@ -26,6 +26,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.List;
 
+// Imports needed for on-device model
+import com.livewire.Service.JavaLlmBridge;
+import java.io.File;
+
 /**
  * Repository responsible for coordinating application data operations
 
@@ -47,10 +51,81 @@ public class MainRepository {
 
     private final Powerplant powerplant;
 
+    // New fields, alongside the existing aiservice/powerplant fields
+    private final Context context;
+    private final JavaLlmBridge llmBridge;
+
+    // Tracks whether the on-device model has already been loaded into memory,
+    // since loadModel() can only be called once per app session (the native
+    // engine is a singleton and rejects a second load while one is already ready)
+    private volatile boolean gemmaModelLoaded = false;
+    private final Object llmLoadLock = new Object();
+
+    private static final String GEMMA_MODEL_FILENAME = "gemma-2-2b-it-Q4_K_M.gguf";
+
 
     // Service used to communicate with the backend AI API
     // The repository owns this service instance and delegates
     // network-related operations to it
+
+    /**
+     * Routes a prompt to the on-device Gemma model instead of the server.
+     * Only the most recent user message is sent — the native engine keeps its
+     * own conversation context internally across calls, unlike the server path
+     * which resends the full message history every time.
+     */
+    private void submitPromptOnDevice(
+            List<ChatMessage> messages,
+            RepositoryCallback callback) {
+
+        ChatMessage lastMessage = messages.isEmpty() ? null : messages.get(messages.size() - 1);
+        if (lastMessage == null || lastMessage.getSender() != ChatMessage.Sender.USER) {
+            callback.onError("No user prompt to send to on-device model");
+            return;
+        }
+        String prompt = lastMessage.getMessage();
+
+        Runnable sendPrompt = () -> {
+            StringBuilder responseBuilder = new StringBuilder();
+            llmBridge.sendUserPrompt(prompt, 200, new JavaLlmBridge.TokenCallback() {
+                @Override
+                public void onToken(String token) {
+                    responseBuilder.append(token);
+                }
+                @Override
+                public void onComplete() {
+                    callback.onResult(responseBuilder.toString());
+                }
+                @Override
+                public void onError(Throwable e) {
+                    callback.onError(e.getMessage());
+                }
+            });
+        };
+
+        synchronized (llmLoadLock) {
+            if (gemmaModelLoaded) {
+                sendPrompt.run();
+                return;
+            }
+        }
+
+        String modelPath = new File(context.getExternalFilesDir(null), GEMMA_MODEL_FILENAME).getAbsolutePath();
+        llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
+            @Override
+            public void onSuccess() {
+                synchronized (llmLoadLock) {
+                    gemmaModelLoaded = true;
+                }
+                sendPrompt.run();
+            }
+            @Override
+            public void onError(Throwable e) {
+                callback.onError("Failed to load on-device model: " + e.getMessage());
+            }
+        });
+    }
+
     private final AIService aiservice = new AIService();
 
     private final ExecutorService databaseExecutor =
@@ -162,11 +237,16 @@ public class MainRepository {
     }
     public MainRepository(Context context) {
 
+        this.context = context.getApplicationContext();
+        llmBridge = new JavaLlmBridge(this.context);
+
         powerplant = Room.databaseBuilder(
                 context.getApplicationContext(),
                 Powerplant.class,
                 "livewire_powerplant"
-        ).build();
+        )
+        .addMigrations(Powerplant.MIGRATION_1_2)
+        .build();
     }
 
     // Chat
@@ -194,6 +274,11 @@ public class MainRepository {
             List<ChatMessage> messages,
             AIModel model,
             RepositoryCallback callback) {
+
+        if ("gemma_ondevice".equals(model.getBackend())) {
+            submitPromptOnDevice(messages, callback);
+            return;
+        }
 
         // Delegate the request to the AI service
         aiservice.sendPrompt(
@@ -334,5 +419,11 @@ public class MainRepository {
                     }
                 }
         );
+    }
+
+    // shuts down databaseExecutor and closes Powerplant
+    public void close() {
+        databaseExecutor.shutdown();
+        powerplant.close();
     }
 }
