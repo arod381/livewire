@@ -58,10 +58,10 @@ public class MainRepository {
     // Tracks whether the on-device model has already been loaded into memory,
     // since loadModel() can only be called once per app session (the native
     // engine is a singleton and rejects a second load while one is already ready)
-    private volatile boolean gemmaModelLoaded = false;
+    private volatile boolean ondeviceModelLoaded = false;
     private final Object llmLoadLock = new Object();
 
-    private static final String GEMMA_MODEL_FILENAME = "gemma-2-2b-it-Q4_K_M.gguf";
+    private static final String ONDEVICE_BACKEND = "gguf_ondevice";
 
 
     // Service used to communicate with the backend AI API
@@ -69,13 +69,14 @@ public class MainRepository {
     // network-related operations to it
 
     /**
-     * Routes a prompt to the on-device Gemma model instead of the server.
+     * Routes a prompt to the on-device model instead of the server.
      * Only the most recent user message is sent — the native engine keeps its
      * own conversation context internally across calls, unlike the server path
      * which resends the full message history every time.
      */
     private void submitPromptOnDevice(
             List<ChatMessage> messages,
+            String modelFilename,
             RepositoryCallback callback) {
 
         ChatMessage lastMessage = messages.isEmpty() ? null : messages.get(messages.size() - 1);
@@ -104,18 +105,18 @@ public class MainRepository {
         };
 
         synchronized (llmLoadLock) {
-            if (gemmaModelLoaded) {
+            if (ondeviceModelLoaded) {
                 sendPrompt.run();
                 return;
             }
         }
 
-        String modelPath = new File(context.getExternalFilesDir(null), GEMMA_MODEL_FILENAME).getAbsolutePath();
+        String modelPath = new File(context.getExternalFilesDir(null), modelFilename).getAbsolutePath();
         llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
             @Override
             public void onSuccess() {
                 synchronized (llmLoadLock) {
-                    gemmaModelLoaded = true;
+                    ondeviceModelLoaded = true;
                 }
                 sendPrompt.run();
             }
@@ -275,8 +276,8 @@ public class MainRepository {
             AIModel model,
             RepositoryCallback callback) {
 
-        if ("gemma_ondevice".equals(model.getBackend())) {
-            submitPromptOnDevice(messages, callback);
+        if (ONDEVICE_BACKEND.equals(model.getBackend())) {
+            submitPromptOnDevice(messages, model.getId(), callback);
             return;
         }
 

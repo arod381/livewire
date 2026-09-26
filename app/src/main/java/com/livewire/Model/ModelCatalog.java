@@ -14,25 +14,17 @@ public final class ModelCatalog {
 
         models.add(
                 new AIModel(
-                        "phi4-mini",
-                        "Phi 4 3.8B",
-                        "ollama"
+                        "microsoft_Phi-4-mini-instruct-Q4_K_M.gguf",
+                        "Phi 4 Mini",
+                        "gguf_ondevice"
                 )
         );
 
         models.add(
                 new AIModel(
-                        "livewire1.0:0",
-                        "Livewire 1.0 1A",
-                        "transformers"
-                )
-        );
-
-        models.add(
-                new AIModel(
-                        "qwen3:1.7b",
-                        "Qwen 3 1.7B",
-                        "ollama"
+                        "gemma-2-2b-it-Q4_K_M.gguf",
+                        "Gemma 2B",
+                        "gguf_ondevice"
                 )
         );
 
