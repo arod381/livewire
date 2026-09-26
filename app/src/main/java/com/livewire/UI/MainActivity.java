@@ -177,37 +177,5 @@ public class MainActivity extends AppCompatActivity {
             // Return the consumed insets
             return insets;
         });
-
-        // TEMPORARY TEST — validates on-device Phi-4-mini loading via JavaLlmBridge
-        JavaLlmBridge bridge = new JavaLlmBridge(this);
-        bridge.loadModel("/sdcard/Download/microsoft_Phi-4-mini-instruct-Q4_K_M.gguf", new JavaLlmBridge.SimpleCallback() {
-            @Override
-            public void onSuccess() {
-                bridge.sendUserPrompt("Explain the difference between TCP and UDP.", 200, new JavaLlmBridge.TokenCallback() {
-                    @Override
-                    public void onToken(String token) {
-                        runOnUiThread(() -> {
-                            android.util.Log.d("LlmTest", "Token: " + token);
-                        });
-                    }
-                    @Override
-                    public void onComplete() {
-                        android.util.Log.d("LlmTest", "Generation complete");
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                        android.util.Log.e("LlmTest", "Generation error", e);
-                    }
-                });
-            }
-            @Override
-            public void onError(Throwable e) {
-                if (e instanceof com.arm.aichat.UnsupportedArchitectureException) {
-                    android.util.Log.e("LlmTest", "Phi-4-mini architecture not supported by this wrapper", e);
-                } else {
-                    android.util.Log.e("LlmTest", "Model load error", e);
-                }
-            }
-        });
     }
 }
