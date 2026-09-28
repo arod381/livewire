@@ -2,6 +2,7 @@
 plugins {
     id 'com.android.application' version '8.13.2' apply false
     id 'com.android.library' version '8.13.2' apply false
+    id("com.autonomousapps.dependency-analysis") version "3.19.2" apply false
 }
 ext {
     roomVersion = "2.5.2" // Replace with your desired Room version

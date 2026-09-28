@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android' version '2.3.0'
+    id 'com.autonomousapps.dependency-analysis'
 }
 
 android {
@@ -26,6 +27,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17) // "Please compile this module with a JDK 17"
     }
 }
 

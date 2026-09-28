@@ -16,7 +16,11 @@ public final class ModelCatalog {
                 new AIModel(
                         "microsoft_Phi-4-mini-instruct-Q4_K_M.gguf",
                         "Phi 4 Mini",
-                        "gguf_ondevice"
+                        "gguf_ondevice",
+                        500,
+                        0.8,
+                        0.9,
+                        10
                 )
         );
 
@@ -24,7 +28,11 @@ public final class ModelCatalog {
                 new AIModel(
                         "gemma-2-2b-it-Q4_K_M.gguf",
                         "Gemma 2B",
-                        "gguf_ondevice"
+                        "gguf_ondevice",
+                        500,
+                        0.8,
+                        0.9,
+                        10
                 )
         );
 

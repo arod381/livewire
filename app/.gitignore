@@ -1,1 +1,4 @@
 /build
+
+# Ignore llama.cpp, as I do not own repo
+/llama

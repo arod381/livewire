@@ -65,8 +65,8 @@
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"
-        android:layout_width="117dp"
-        android:layout_height="401dp"
+        android:layout_width="158dp"
+        android:layout_height="611dp"
         android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/chat_recycler_view"
