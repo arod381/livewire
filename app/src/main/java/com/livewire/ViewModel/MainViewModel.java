@@ -209,6 +209,13 @@ public class MainViewModel extends AndroidViewModel {
             return;
         }
 
+        // On-device models have no server to update, so apply the cap locally
+        if (MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
+            repository.setOnDeviceMaxTokens(max);
+            callback.onResult("Applied");
+            return;
+        }
+
         repository.updateModelConfiguration(
                 model.getId(),
                 max,
@@ -467,6 +474,24 @@ public class MainViewModel extends AndroidViewModel {
 
     public void setSelectedModel(AIModel model) {
         selectedModel.setValue(model);
+
+        if (model == null) {
+            return;
+        }
+
+        // The settings screen moves the sliders to the model's defaults on every
+        // selection, so store the same values here. Otherwise Tune could send the
+        // previous model's numbers, because setProgress() doesn't notify the ViewModel.
+        maxTokens.setValue(model.getMaxTokens());
+        temperature.setValue(model.getTemperature());
+        topP.setValue(model.getTopP());
+        topK.setValue(model.getTopK());
+
+        // On-device models use their default cap from the moment they're selected,
+        // so the engine never runs with a value the sliders don't show
+        if (MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
+            repository.setOnDeviceMaxTokens(model.getMaxTokens());
+        }
     }
 
     /**

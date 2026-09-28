@@ -55,13 +55,29 @@ public class MainRepository {
     private final Context context;
     private final JavaLlmBridge llmBridge;
 
+    // Max tokens per on-device reply. Updated from the settings screen.
+    private volatile int maxTokens = 1000;
+
+    public static final String ONDEVICE_BACKEND = "gguf_ondevice";
+
+    public void setOnDeviceMaxTokens(int tokens) {
+        // Clamp: a SeekBar can report 0, which would produce an empty reply
+        maxTokens = Math.max(1, tokens);
+    }
+
     // Tracks whether the on-device model has already been loaded into memory,
     // since loadModel() can only be called once per app session (the native
     // engine is a singleton and rejects a second load while one is already ready)
-    private volatile boolean ondeviceModelLoaded = false;
+    // Filename of the on-device model currently loaded in the native engine,
+    // or null if none. Compared on every request so a different model triggers
+    // an unload + reload instead of silently reusing the old one.
+    private volatile String loadedModelFilename = null;
     private final Object llmLoadLock = new Object();
 
-    private static final String ONDEVICE_BACKEND = "gguf_ondevice";
+    // Runs the blocking engine cleanUp() off the main thread
+    private final ExecutorService llmExecutor = Executors.newSingleThreadExecutor();
+
+
 
 
     // Service used to communicate with the backend AI API
@@ -74,6 +90,7 @@ public class MainRepository {
      * own conversation context internally across calls, unlike the server path
      * which resends the full message history every time.
      */
+
     private void submitPromptOnDevice(
             List<ChatMessage> messages,
             String modelFilename,
@@ -87,8 +104,10 @@ public class MainRepository {
         String prompt = lastMessage.getMessage();
 
         Runnable sendPrompt = () -> {
+            // Snapshot so a slider change mid-request can't affect this reply
+            final int tokens = maxTokens;
             StringBuilder responseBuilder = new StringBuilder();
-            llmBridge.sendUserPrompt(prompt, 200, new JavaLlmBridge.TokenCallback() {
+            llmBridge.sendUserPrompt(prompt, tokens, new JavaLlmBridge.TokenCallback() {
                 @Override
                 public void onToken(String token) {
                     responseBuilder.append(token);
@@ -104,26 +123,44 @@ public class MainRepository {
             });
         };
 
+        // Requested model is already loaded: send immediately
         synchronized (llmLoadLock) {
-            if (ondeviceModelLoaded) {
+            if (modelFilename.equals(loadedModelFilename)) {
                 sendPrompt.run();
                 return;
             }
         }
 
         String modelPath = new File(context.getExternalFilesDir(null), modelFilename).getAbsolutePath();
-        llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
-            @Override
-            public void onSuccess() {
-                synchronized (llmLoadLock) {
-                    ondeviceModelLoaded = true;
+
+        // A different model (or none) is loaded, so free the engine first.
+        // cleanUp() blocks, hence the background thread. It also throws when the
+        // engine is idle (fresh start), hence the try/catch. It doubles as the
+        // reset for the engine's Error state after a failed load, which lets
+        // the user retry without restarting.
+        llmExecutor.execute(() -> {
+            synchronized (llmLoadLock) {
+                loadedModelFilename = null;
+            }
+            try {
+                llmBridge.cleanUp();
+            } catch (Exception ignored) {
+                // Nothing was loaded, so there is nothing to unload
+            }
+
+            llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    synchronized (llmLoadLock) {
+                        loadedModelFilename = modelFilename;
+                    }
+                    sendPrompt.run();
                 }
-                sendPrompt.run();
-            }
-            @Override
-            public void onError(Throwable e) {
-                callback.onError("Failed to load on-device model: " + e.getMessage());
-            }
+                @Override
+                public void onError(Throwable e) {
+                    callback.onError("Failed to load on-device model: " + e.getMessage());
+                }
+            });
         });
     }
 
@@ -461,6 +498,7 @@ public class MainRepository {
     // shuts down databaseExecutor and closes Powerplant
     public void close() {
         databaseExecutor.shutdown();
+        llmExecutor.shutdown();
         powerplant.close();
     }
 }
