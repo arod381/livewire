@@ -100,10 +100,10 @@ public class MainViewModel extends AndroidViewModel {
             new MutableLiveData<>(new ArrayList<>());
 
     private final MutableLiveData<Integer> maxTokens =
-            new MutableLiveData<>(100);
+            new MutableLiveData<>(1000);
 
     private final MutableLiveData<Double> temperature =
-            new MutableLiveData<>(0.7);
+            new MutableLiveData<>(1.5);
 
     private final MutableLiveData<Double> topP =
             new MutableLiveData<>(0.9);
@@ -212,6 +212,7 @@ public class MainViewModel extends AndroidViewModel {
         // On-device models have no server to update, so apply the cap locally
         if (MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
             repository.setOnDeviceMaxTokens(max);
+            repository.setOnDeviceSamplingParams(temp.floatValue(), p.floatValue(), k);
             callback.onResult("Applied");
             return;
         }
@@ -491,6 +492,8 @@ public class MainViewModel extends AndroidViewModel {
         // so the engine never runs with a value the sliders don't show
         if (MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
             repository.setOnDeviceMaxTokens(model.getMaxTokens());
+            // Temperature, top-p and top-k aren't applied here — no model may be
+            // loaded yet. They're sent with the sampler call on the first prompt instead.
         }
     }
 

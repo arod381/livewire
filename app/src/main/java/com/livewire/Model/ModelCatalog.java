@@ -17,8 +17,8 @@ public final class ModelCatalog {
                         "microsoft_Phi-4-mini-instruct-Q4_K_M.gguf",
                         "Phi 4 Mini",
                         "gguf_ondevice",
-                        500,
-                        0.8,
+                        1000,
+                        1.5,
                         0.9,
                         10
                 )

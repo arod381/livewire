@@ -65,6 +65,18 @@ public class MainRepository {
         maxTokens = Math.max(1, tokens);
     }
 
+    // On-device sampling settings. Applied fresh on every prompt because
+// unloading a model (e.g. switching models) resets the sampler.
+    private volatile float temperature = 1.5f;
+    private volatile float topP = 0.9f;
+    private volatile int topK = 10;
+
+    public void setOnDeviceSamplingParams(float temperature, float topP, int topK) {
+        this.temperature = temperature;
+        this.topP = topP;
+        this.topK = topK;
+    }
+
     // Tracks whether the on-device model has already been loaded into memory,
     // since loadModel() can only be called once per app session (the native
     // engine is a singleton and rejects a second load while one is already ready)
@@ -76,9 +88,6 @@ public class MainRepository {
 
     // Runs the blocking engine cleanUp() off the main thread
     private final ExecutorService llmExecutor = Executors.newSingleThreadExecutor();
-
-
-
 
     // Service used to communicate with the backend AI API
     // The repository owns this service instance and delegates
@@ -104,21 +113,33 @@ public class MainRepository {
         String prompt = lastMessage.getMessage();
 
         Runnable sendPrompt = () -> {
-            // Snapshot so a slider change mid-request can't affect this reply
             final int tokens = maxTokens;
-            StringBuilder responseBuilder = new StringBuilder();
-            llmBridge.sendUserPrompt(prompt, tokens, new JavaLlmBridge.TokenCallback() {
+            final float temp = temperature;
+            final float p = topP;
+            final int k = topK;
+
+            llmBridge.setSamplingParams(temp, p, k, new JavaLlmBridge.SimpleCallback() {
                 @Override
-                public void onToken(String token) {
-                    responseBuilder.append(token);
-                }
-                @Override
-                public void onComplete() {
-                    callback.onResult(responseBuilder.toString());
+                public void onSuccess() {
+                    StringBuilder responseBuilder = new StringBuilder();
+                    llmBridge.sendUserPrompt(prompt, tokens, new JavaLlmBridge.TokenCallback() {
+                        @Override
+                        public void onToken(String token) {
+                            responseBuilder.append(token);
+                        }
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(responseBuilder.toString());
+                        }
+                        @Override
+                        public void onError(Throwable e) {
+                            callback.onError(e.getMessage());
+                        }
+                    });
                 }
                 @Override
                 public void onError(Throwable e) {
-                    callback.onError(e.getMessage());
+                    callback.onError("Failed to apply settings: " + e.getMessage());
                 }
             });
         };

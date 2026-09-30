@@ -68,6 +68,7 @@
         android:layout_width="158dp"
         android:layout_height="611dp"
         android:layout_marginTop="4dp"
+        android:textIsSelectable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/chat_recycler_view"
         app:layout_constraintHorizontal_bias="0.0"

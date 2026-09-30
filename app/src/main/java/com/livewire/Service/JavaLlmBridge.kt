@@ -37,6 +37,17 @@ class JavaLlmBridge(context: Context) {
         }
     }
 
+    fun setSamplingParams(temperature: Float, topP: Float, topK: Int, callback: SimpleCallback) {
+        scope.launch {
+            try {
+                engine.setSamplingParams(temperature, topP, topK)
+                callback.onSuccess()
+            } catch (e: Exception) {
+                callback.onError(e)
+            }
+        }
+    }
+
     fun sendUserPrompt(message: String, predictLength: Int, callback: TokenCallback) {
         scope.launch {
             try {
