@@ -16,6 +16,7 @@ import com.livewire.Model.DiagnosticReport;
 import com.livewire.Model.DiagnosticStatistics;
 import com.livewire.Entity.DynamoResponse;
 
+import com.livewire.Model.ModelCatalog;
 import com.livewire.Service.DiagnosticAnalyzer;
 import com.livewire.Service.DiagnosticEventLogger;
 
@@ -126,6 +127,17 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
 
         repository = new MainRepository(application);
+
+        // Load Phi immediately so it's ready before the user sends anything
+        AIModel defaultModel = ModelCatalog.getModels().stream()
+                .filter(m -> "microsoft_Phi-4-mini-instruct-Q4_K_M.gguf".equals(m.getId()))
+                .findFirst()
+                .orElse(null);
+
+        if (defaultModel != null) {
+            setSelectedModel(defaultModel);
+            repository.preloadOnDeviceModel(defaultModel.getId());
+        }
 
         loadDynamos();
     }

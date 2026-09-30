@@ -1,6 +1,7 @@
 package com.livewire.Repository;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.room.Room;
 
@@ -94,6 +95,63 @@ public class MainRepository {
     // network-related operations to it
 
     /**
+     * Loads modelFilename in the background without sending a prompt.
+     * Meant for app launch, so the model is ready before the first message.
+     */
+    public void preloadOnDeviceModel(String modelFilename) {
+        ensureOnDeviceModelLoaded(
+                modelFilename,
+                () -> Log.d("MainRepository", "Preloaded on-device model: " + modelFilename),
+                e -> Log.e("MainRepository", "Preload failed for " + modelFilename, e)
+        );
+    }
+
+    /**
+     * Loads modelFilename if it isn't already the active model, then runs onReady.
+     * Used both to load-on-demand before a prompt, and to preload at app launch.
+     */
+    private void ensureOnDeviceModelLoaded(
+            String modelFilename,
+            Runnable onReady,
+            java.util.function.Consumer<Throwable> onError) {
+
+        synchronized (llmLoadLock) {
+            if (modelFilename.equals(loadedModelFilename)) {
+                onReady.run();
+                return;
+            }
+        }
+
+        String modelPath = new File(context.getExternalFilesDir(null), modelFilename).getAbsolutePath();
+
+        llmExecutor.execute(() -> {
+            synchronized (llmLoadLock) {
+                loadedModelFilename = null;
+            }
+            try {
+                llmBridge.cleanUp();
+            } catch (Exception ignored) {
+                // Nothing was loaded, so there is nothing to unload
+            }
+
+            llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    synchronized (llmLoadLock) {
+                        loadedModelFilename = modelFilename;
+                    }
+                    onReady.run();
+                }
+                @Override
+                public void onError(Throwable e) {
+                    onError.accept(e);
+                }
+            });
+        });
+    }
+
+
+    /**
      * Routes a prompt to the on-device model instead of the server.
      * Only the most recent user message is sent — the native engine keeps its
      * own conversation context internally across calls, unlike the server path
@@ -144,6 +202,15 @@ public class MainRepository {
             });
         };
 
+        ensureOnDeviceModelLoaded(
+                modelFilename,
+                sendPrompt,
+                e -> callback.onError("Failed to load on-device model: " + e.getMessage())
+        );
+    }
+
+    /*
+
         // Requested model is already loaded: send immediately
         synchronized (llmLoadLock) {
             if (modelFilename.equals(loadedModelFilename)) {
@@ -184,6 +251,8 @@ public class MainRepository {
             });
         });
     }
+
+     */
 
     private final AIService aiservice = new AIService();
 
