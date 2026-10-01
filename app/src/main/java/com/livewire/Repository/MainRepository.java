@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.room.Room;
 
+import com.arm.aichat.InferenceEngine;
 import com.livewire.Database.Powerplant;
 import com.livewire.Entity.DynamoResponse;
 
@@ -14,6 +15,7 @@ import com.livewire.Model.DiagnosticEvent;
 import com.livewire.Model.DiagnosticReport;
 
 // Service responsible for communication with the backend/AI server
+import com.livewire.Model.DiagnosticStatistics;
 import com.livewire.Service.AIService;
 
 // Chat message model used when submitting prompts
@@ -130,8 +132,15 @@ public class MainRepository {
             }
             try {
                 llmBridge.cleanUp();
-            } catch (Exception ignored) {
-                // Nothing was loaded, so there is nothing to unload
+            } catch (Exception e) {
+                // A model was loaded and failed to unload — don't swallow this one,
+                // since calling loadModel() next will just fail with a confusing
+                // "Cannot load model in ModelReady" instead of the real cause.
+                if (llmBridge.getState() instanceof InferenceEngine.State.ModelReady) {
+                    onError.accept(e);
+                    return;
+                }
+                // Otherwise: nothing was loaded, which is the expected/harmless case
             }
 
             llmBridge.loadModel(modelPath, new JavaLlmBridge.SimpleCallback() {
@@ -472,27 +481,167 @@ public class MainRepository {
         });
     }
 
-    // Diagnostics
-    /**
-     * Callback specifically for diagnostic reports
+    // Token cap for diagnostics, independent of the chat maxTokens slider.
+    // The five-section report needs room.
+    private static final int DIAGNOSTICS_MAX_TOKENS = 1000;
 
-     * A separate callback type is used because the successful result
-     * is a DiagnosticReport rather than a String
-     */
     public interface DiagnosticsRepositoryCallback {
         void onResult(DiagnosticReport report);
         void onError(String error);
     }
 
-    /**
-     * Callback used when AI analysis of diagnostics completes
-
-     * The AI analysis is returned as a string
-     */
     public interface AnalysisRepositoryCallback {
         void onResult(String analysis);
         void onError(String error);
     }
+
+    /**
+     * Ports the /analyze prompt from server.py so on-device models can
+     * produce the same structured report without a server round-trip.
+     * analysisDepth and contextPerformance aren't in DiagnosticReport/
+     * DiagnosticStatistics/DiagnosticEvent — pass them in from wherever
+     * AIService currently assembles them.
+     */
+    private String buildDiagnosticsPrompt(DiagnosticReport report) {
+
+        DiagnosticStatistics stats = report.getStatistics();
+        StringBuilder eventsText = new StringBuilder();
+        List<DiagnosticEvent> events = report.getEvents();
+        if (events != null) {
+            int start = Math.max(0, events.size() - 50);
+            for (int i = start; i < events.size(); i++) {
+                DiagnosticEvent e = events.get(i);
+                eventsText.append(String.format(
+                        "- %s: %s (%dms)\n", e.getType(), e.getDetails(), e.getDurationMs()));
+            }
+        }
+
+        return "You are analyzing the LiveWire application itself.\n\n"
+                + "Review the following diagnostic information and identify\n"
+                + "actual problems, abnormal behavior, or potential concerns.\n\n"
+                + "Do not invent problems that are not supported by the data.\n\n"
+                + "MODEL\n"
+                + "Name: " + report.getModelName() + "\n"
+                + "Temperature: " + report.getTemperature() + "\n"
+                + "Top P: " + report.getTopP() + "\n"
+                + "Top K: " + report.getTopK() + "\n"
+                + "Max Tokens: " + report.getMaxTokens() + "\n\n"
+                + "PERFORMANCE\n"
+                + "Total Requests: " + stats.getTotalRequests() + "\n"
+                + "Successful Requests: " + stats.getSuccessfulRequests() + "\n"
+                + "Failed Requests: " + stats.getFailedRequests() + "\n"
+                + "Network Errors: " + stats.getNetworkErrors() + "\n"
+                + "HTTP Errors: " + stats.getHttpErrors() + "\n"
+                + "Parse Errors: " + stats.getParseErrors() + "\n"
+                + "Average Response Time: " + stats.getAverageResponseTimeMs() + " ms\n"
+                + "Slowest Response Time: " + stats.getSlowestResponseMs() + " ms\n\n"
+                + "EVENT HISTORY\n" + eventsText + "\n\n"
+                + "Analyze the LiveWire application based only on the supplied\n"
+                + "diagnostic information.\n\n"
+                + "Look for:\n\n"
+                + "1. Repeated failures\n"
+                + "2. Recurring error types\n"
+                + "3. Unusually slow responses\n"
+                + "4. Patterns in response times\n"
+                + "5. Response parsing failures\n"
+                + "6. Evidence that the application is behaving normally\n\n"
+                + "Distinguish isolated events from recurring patterns.\n\n"
+                + "Do not invent problems that aren't supported by the data.\n\n"
+                + "For each significant problem, identify:\n"
+                + "- Evidence\n"
+                + "- Likely cause\n"
+                + "- Severity\n\n"
+                + "If no significant problem is supported by the evidence,\n"
+                + "state that the application appears healthy.\n\n"
+                + "Do not modify the application or recommend changes unless\n"
+                + "the diagnostic evidence supports the recommendation.\n\n"
+                + "Do not recommend changing anything unless the\n"
+                + "available evidence supports the recommendation.";
+    }
+    /**
+     * Runs the diagnostics prompt on-device, bypassing chat state entirely.
+     * Loads the given model if it isn't already active, applies its own
+     * sampling settings, and sends the full report as a single message.
+     */
+    public void getDiagnosticsOnDevice(AIModel model, DiagnosticsRepositoryCallback callback) {
+
+        DiagnosticReport report = new DiagnosticReport();
+        report.setServerStatus("on-device");
+        report.setModelName(model.getDisplayName());
+        report.setTemperature(temperature);
+        report.setTopP(topP);
+        report.setTopK(topK);
+        report.setMaxTokens(maxTokens);
+
+        callback.onResult(report);
+    }
+
+    public void analyzeDiagnosticsOnDevice(
+            DiagnosticReport report,
+            String modelFilename,
+            AnalysisRepositoryCallback callback) {
+
+        String prompt = buildDiagnosticsPrompt(report);
+
+        Runnable sendPrompt = () -> {
+            llmBridge.setSamplingParams(temperature, topP, topK, new JavaLlmBridge.SimpleCallback() {
+                @Override
+                public void onSuccess() {
+                    StringBuilder responseBuilder = new StringBuilder();
+                    llmBridge.sendUserPrompt(prompt, DIAGNOSTICS_MAX_TOKENS, new JavaLlmBridge.TokenCallback() {
+                        @Override
+                        public void onToken(String token) {
+                            responseBuilder.append(token);
+                        }
+                        @Override
+                        public void onComplete() {
+                            callback.onResult(responseBuilder.toString());
+                        }
+                        @Override
+                        public void onError(Throwable e) {
+                            callback.onError(e.getMessage());
+                        }
+                    });
+                }
+                @Override
+                public void onError(Throwable e) {
+                    callback.onError("Failed to apply settings: " + e.getMessage());
+                }
+            });
+        };
+
+        ensureOnDeviceModelLoaded(
+                modelFilename,
+                sendPrompt,
+                e -> callback.onError("Failed to load on-device model: " + e.getMessage())
+        );
+    }
+
+    // Diagnostics
+    /*
+     * Callback specifically for diagnostic reports
+
+     * A separate callback type is used because the successful result
+     * is a DiagnosticReport rather than a String
+     */
+
+    /*
+    public interface DiagnosticsRepositoryCallback {
+        void onResult(DiagnosticReport report);
+        void onError(String error);
+    }
+
+
+     * Callback used when AI analysis of diagnostics completes
+
+     * The AI analysis is returned as a string
+
+    public interface AnalysisRepositoryCallback {
+        void onResult(String analysis);
+        void onError(String error);
+    }
+
+    */
 
     /**
      * Retrieves the current diagnostic information

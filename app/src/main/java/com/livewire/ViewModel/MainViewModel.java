@@ -519,61 +519,51 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void loadDiagnostics() {
 
+        AIModel model = selectedModel.getValue();
+        if (model != null && MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
+            repository.getDiagnosticsOnDevice(model, new MainRepository.DiagnosticsRepositoryCallback() {
+                @Override
+                public void onResult(DiagnosticReport report) {
+                    List<DiagnosticEvent> events = new ArrayList<>(DiagnosticEventLogger.getEvents());
+                    report.setEvents(events);
+                    DiagnosticStatistics statistics = DiagnosticAnalyzer.analyze(events);
+                    report.setStatistics(statistics);
+                    diagnostics.postValue(report);
+                }
+                @Override
+                public void onError(String error) {
+                    diagnostics.postValue(null);
+                    diagnosticAnalysis.postValue("Diagnostics error: " + error);
+                }
+            });
+            return;
+        }
+
         repository.getDiagnostics(
                 new MainRepository.DiagnosticsRepositoryCallback() {
 
-                    /**
-                     * Called when diagnostics are successfully retrieved
-                     */
                     @Override
                     public void onResult(DiagnosticReport report) {
 
-                        /*
-                         * Get a snapshot of locally recorded diagnostic
-                         * events
-                         */
                         List<DiagnosticEvent> events =
                                 new ArrayList<>(
                                         DiagnosticEventLogger.getEvents()
                                 );
 
-                        /*
-                         * Attach local event history to the diagnostic
-                         * report
-                         */
                         report.setEvents(events);
 
-                        /*
-                         * Analyze the events locally
-                         *
-                         * DiagnosticAnalyzer calculates statistics such
-                         * as request counts, failures, and response times
-                         */
                         DiagnosticStatistics statistics =
                                 DiagnosticAnalyzer.analyze(events);
 
-                        // Attach calculated statistics to the report
                         report.setStatistics(statistics);
 
-                        /*
-                         * Publish the completed report
-                         *
-                         * Any Activity/Fragment observing getDiagnostics()
-                         * will receive the updated report
-                         */
                         diagnostics.postValue(report);
                     }
 
-                    /**
-                     * Called when diagnostics could not be retrieved
-                     */
                     @Override
                     public void onError(String error) {
 
-                        // Clear the current diagnostic report
                         diagnostics.postValue(null);
-
-                        // Expose the error through the analysis state
                         diagnosticAnalysis.postValue("Diagnostics error: " + error);
                     }
                 }
@@ -588,14 +578,9 @@ public class MainViewModel extends AndroidViewModel {
      */
     public void analyzeDiagnostics() {
 
-        // Retrieve the most recently loaded diagnostic report
         DiagnosticReport report =
                 diagnostics.getValue();
 
-        /*
-         * There is nothing to analyze if diagnostics have not
-         * been loaded yet
-         */
         if (report == null) {
             diagnosticAnalysis.postValue(
                     "No diagnostic report available."
@@ -603,43 +588,47 @@ public class MainViewModel extends AndroidViewModel {
             return;
         }
 
-        /*
-         * Send the report to MainRepository
-         *
-         * MainRepository delegates the actual network request
-         * to AIService
-         */
+        AIModel model = selectedModel.getValue();
+        if (model != null && MainRepository.ONDEVICE_BACKEND.equals(model.getBackend())) {
+            repository.analyzeDiagnosticsOnDevice(
+                    report,
+                    model.getId(),
+                    new MainRepository.AnalysisRepositoryCallback() {
+                        @Override
+                        public void onResult(String analysis) {
+                            diagnosticAnalysis.postValue(analysis);
+                        }
+                        @Override
+                        public void onError(String error) {
+                            diagnosticAnalysis.postValue("Analysis error: " + error);
+                        }
+                    }
+            );
+            return;
+        }
+
         repository.analyzeDiagnostics(
                 report,
                 new MainRepository.AnalysisRepositoryCallback() {
 
-                    /**
-                     * Called when AI diagnostic analysis succeeds
-                     */
                     @Override
                     public void onResult(
                             String analysis) {
 
-                        // Log the received analysis for debugging
                         Log.d(
                                 "LiveWire",
                                 "VIEWMODEL ANALYSIS RECEIVED: " + analysis
                         );
 
-                        // Publish the AI analysis to the UI
                         diagnosticAnalysis.postValue(
                                 analysis
                         );
                     }
 
-                    /**
-                     * Called when AI diagnostic analysis fails
-                     */
                     @Override
                     public void onError(
                             String error) {
 
-                        // Make the error available to the UI
                         diagnosticAnalysis.postValue(
                                 "Analysis error: " + error);
                     }

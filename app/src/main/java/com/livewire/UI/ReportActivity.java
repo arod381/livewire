@@ -95,9 +95,8 @@ public class ReportActivity extends AppCompatActivity {
                     "Android: " + app.getAndroidVersion() + "\n" +
                     "Device: " + app.getDeviceModel() + "\n\n" +
 
-                    "Server\n" +
-                    "Status: " + diagnostics.getServerStatus() + "\n" +
-                    "Uptime: " + diagnostics.getUptimeSeconds() + " seconds\n\n" +
+                    "SERVER\n" +
+                    "Status: " + diagnostics.getServerStatus() + "\n\n" +
 
                     "MODEL \n" +
                     "Name: " + diagnostics.getModelName() + "\n" +

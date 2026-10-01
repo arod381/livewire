@@ -26,6 +26,8 @@ class JavaLlmBridge(context: Context) {
     private val engine: InferenceEngine = AiChat.getInferenceEngine(context)
     private val scope = CoroutineScope(Dispatchers.IO)
 
+    fun getState(): InferenceEngine.State = engine.state.value
+
     fun loadModel(path: String, callback: SimpleCallback) {
         scope.launch {
             try {
